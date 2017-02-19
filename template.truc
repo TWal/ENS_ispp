@@ -1,0 +1,12 @@
+
+type bar<t1,t2,t3> = | MACHIN list<a> toto a | VOID;
+
+
+type truc = machin (| MACHIN yui | FOO bar) bidule
+
+
+bar<int> machin(list<bidule> tut){
+                   
+}
+
+
