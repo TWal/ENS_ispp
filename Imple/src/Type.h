@@ -24,8 +24,8 @@ public :
     explicit SumType (const std::vector<Type*>& types)
         : _types(types) {}
     size_t getSize();
-    std::ostream& print(std::ostream& out);
-    std::ostream& codegen(std::ostream& out);
+    std::ostream& print(std::ostream& out) const;
+    std::ostream& codegen(std::ostream& out) const;
     std::string name() const;
     void base_name(const std::string&);
 };
@@ -37,8 +37,8 @@ public:
     explicit ProdType (const std::vector<Type*>& types)
         : _types(types) {}
     size_t getSize();
-    std::ostream& print(std::ostream& out);
-    std::ostream& codegen(std::ostream& out);
+    std::ostream& print(std::ostream& out) const;
+    std::ostream& codegen(std::ostream& out) const;
     std::string name() const;
     void base_name(const std::string&);
 };
@@ -50,8 +50,8 @@ public :
     explicit BasicType(const std::string& ref,size_t size)
         : _ref(ref), _size(size) {}
     inline size_t getSize(){return _size;}
-    std::ostream& print(std::ostream& out);
-    std::ostream& codegen(std::ostream& out);
+    std::ostream& print(std::ostream& out) const;
+    std::ostream& codegen(std::ostream& out) const;
     std::string name() const;
     void base_name(const std::string&);
 };

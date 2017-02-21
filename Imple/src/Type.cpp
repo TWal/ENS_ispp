@@ -6,14 +6,11 @@ using namespace std;
 ostream& operator << (ostream&out,Type* type){
     return type->print(out);
 }
-std::string Type::name() const {
-    return _name;
-}
 
 size_t SumType::getSize(){
     size_t res = 0;
     for(auto p : _types){
-        res = max (res,p.second->getSize()+1);
+        res = max (res,p->getSize()+1);
     }
     return res;
 }
@@ -26,54 +23,116 @@ size_t ProdType::getSize(){
     return res;
 }
 
+std::string SumType::name() const {
+    return _name;
+}
+std::string ProdType::name() const {
+    return _name;
+}
+std::string BasicType::name() const {
+    return _ref;
+}
 
-std::ostream& SumType::print(std::ostream& out){
-    out << "(";
+void SumType::base_name(const std::string& nm) {
+    _name = nm + "_t";
+}
+void ProdType::base_name(const std::string& nm) {
+    _name = nm + "_t";
+}
+void BasicType::base_name(const std::string&) {
+}
+
+
+std::ostream& SumType::print(std::ostream& out) const {
+    out << _name << " (";
     for(auto p : _types){
-        out << "| " << p.first << " " << p.second <<" ";
+        out << "| " << p <<" ";
     }
     out << ")";
     return out;
 }
-std::ostream& ProdType::print(std::ostream& out){
+std::ostream& ProdType::print(std::ostream& out) const {
+    out << _name << " ";
     for(auto p : _types){
         out <<  p <<" ";
     }
     return out;
 }
-std::ostream& BasicType::print(std::ostream& out){
-    return out << _name;
+std::ostream& BasicType::print(std::ostream& out) const {
+    return out << _ref;
 }
 
-std::ostream& SumType::codegen(std::ostream& out){
+std::ostream& SumType::codegen(std::ostream& out) const{
+    /* Dependencies */
+    /* TODO */
+
     /* Type definition */
-}
-std::ostream& ProdType::codegen(std::ostream& out){
-    /* Type definition */
-    out << "struct " << _name << "_t {" << endl;
+    out << "struct " << _name << " {" << endl;
+    out << "    size_t type;" << endl;
+    out << "    union {" << endl;
     for(size_t i = 0; i < _types.size(); ++i) {
-        out << "    " << _types[i]->name() << "_t* m" << i << ";" << endl;
+        out << "        " << _types[i]->name() << "* m" << i << ";" << endl;
     }
-    out << "};" << endl;
+    out << "    };" << endl;
+    out << endl;
 
     /* Building */
-    out << _name << "_t* build_" << _name << "(";
+    for(size_t i = 0; i< _types.size(); ++i) {
+        out << "    " << _name << "* build_" << _types[i]->name() << "(" << _types[i]->name() << "* b) {" << endl;
+        out << "        " << _name << "* ret = new " << _name << ";" << endl;
+        out << "        ret->type = " << i << ";" << endl;
+        out << "        ret->m" << i << " = b;" << endl;
+        out << "    }" << endl;
+        out << endl;
+    }
+
+    /* Matching */
+    out << "    template <typename T>" << endl;
+    out << "    T match(" << _name << "* v";
     for(size_t i = 0; i < _types.size(); ++i) {
-        out << _types[i]->name() << "_t* m" << i << "," << endl;
+        out << ", const function<T(" << _types[i]->name() << ")>& f" << i;
     }
     out << ") {" << endl;
-    out << "    " << _name << "_t* bd = new " << _name << "_t;" << endl;
+    out << "        switch(v->type) {" << endl;
     for(size_t i = 0; i < _types.size(); ++i) {
-        out << "    bd->m" << i << " = m" << i << ";" << endl;
+        out << "            case " << i << ":" << endl;
+        out << "                f" << i << "(v->m" << i << ");" << endl;
+        out << "                break;" << endl;
     }
-    out << "    return bd;" << endl;
-    out << "}" << endl;
+    out << "        }" << endl;
+    out << "    }" << endl;
+    out << "};" << endl;
+    out << endl;
+    return out;
+}
+std::ostream& ProdType::codegen(std::ostream& out) const {
+    /* Dependencies */
+    /* TODO */
+
+    /* Type definition */
+    out << "struct " << _name << " {" << endl;
+    for(size_t i = 0; i < _types.size(); ++i) {
+        out << "    " << _types[i]->name() << "* m" << i << ";" << endl;
+    }
+
+    /* Building */
+    out << "    " << _name << "* build(";
+    for(size_t i = 0; i < _types.size(); ++i) {
+        out << _types[i]->name() << "* m" << i << "," << endl;
+    }
+    out << ") {" << endl;
+    out << "    " << _name << "* bd = new " << _name << ";" << endl;
+    for(size_t i = 0; i < _types.size(); ++i) {
+        out << "        bd->m" << i << " = m" << i << ";" << endl;
+    }
+    out << "        return bd;" << endl;
+    out << "    }" << endl;
     out << endl;
 
     /* Matching */
-    out << "template <typename T>" << endl;
-    out << "T match_" << _name << "(" << _name << "_t* v, const std::function<T("
-        << _types[0]->name() << "_t*";
+    out << "    template <typename T>" << endl;
+    out << "    T match(" << _name << "* v, const std::function<T("
+        << _types[0]->name() << "*";
     for(size_t i = 1; i < _types.size(); ++i) {
         out << ", " << _types[i]->name() << "_t*";
     }
@@ -83,27 +142,15 @@ std::ostream& ProdType::codegen(std::ostream& out){
         out << (i == 0 ? "" : ", ") << "v->m" << i;
     }
     out << ");" << endl;
-    out << "}" << endl;
+    out << "    }" << endl;
+
+    out << "};" << endl;
+    out << endl;
     return out;
 }
 
-std::ostream& BasicType::codegen(std::ostream& out){
-    /* Type declaration */
-    /*
-    out << "typedef " << _name << " " << _name << "_t;" << endl;
-    out << endl;
-    */
-    /* Building */
-    out << _name << "_t* build_" << _name << "(" << _name << " v) {" << endl;
-    out << "    " << _name << "_t bd = new " << _name << "_t(v);" << endl;
-    out << "    " << "retun bd;" << endl;
-    out << "}" << endl;
-    out << endl;
-    /* Matching */
-    out << "template <typename T>" << endl;
-    out << "T match_" << _name << "(" << _name << "_t* v, const std::function<T(" << _name << ")>& f) {" << endl;
-    out << "    return f(*v);" << endl;
-    out << "}" << endl;
+std::ostream& BasicType::codegen(std::ostream& out) const {
+    /* Nothing to do, it is a native c++ type */
     return out;
 }
 
