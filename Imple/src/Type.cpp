@@ -64,7 +64,7 @@ std::ostream& BasicType::print(std::ostream& out) const {
 
 std::ostream& SumType::codegen(std::ostream& out) const{
     /* Dependencies */
-    /* TODO */
+    for(auto d : _types) d->codegen(out);
 
     /* Type definition */
     out << "struct " << _name << " {" << endl;
@@ -107,7 +107,7 @@ std::ostream& SumType::codegen(std::ostream& out) const{
 }
 std::ostream& ProdType::codegen(std::ostream& out) const {
     /* Dependencies */
-    /* TODO */
+    for(auto d : _types) d->codegen(out);
 
     /* Type definition */
     out << "struct " << _name << " {" << endl;
