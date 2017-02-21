@@ -76,9 +76,9 @@ void yy::parser::error(const yy::location& loc,const std::string& st)
 %type   <Type*> prodTypeElem
 %type   <Type*> intType
 %type   <std::vector<Type*> > prodType
-%type   <std::map<std::string,Type*> > sumType
-%type   <std::pair<std::string,Type*> > sumTypeElem
-%type   <std::pair<std::string,Type*> > typeDeclaration
+%type   <std::vector<Type*> > sumType
+%type   <Type*> sumTypeElem
+%type   <Type*> typeDeclaration
 
 //                      %precedence PRODCOMP
 //                      %precedence BAR
@@ -95,7 +95,7 @@ program:
 
 typeDeclaration:
         TYPE IDENT EQUAL type SEMICOLON
-        {$$ = make_pair($2,$4);}
+        {$4->base_name($2); $$ = $4;}
     ;
 
 type:
@@ -123,7 +123,7 @@ prodType:
 sumType:
         sumTypeElem {$$ = {$1};}
     |
-        sumType sumTypeElem {$1.insert($2); $$ = $1;}
+        sumType sumTypeElem {$1.push_back($2); $$ = $1;}
     ;
 
 intType:
@@ -135,7 +135,7 @@ intType:
     ;
 
 sumTypeElem:
-        BAR IDENT intType {$$ = make_pair($2,$3);}
+        BAR IDENT intType {$3->base_name($2); $$ = $3;}
     ;
 
 %%

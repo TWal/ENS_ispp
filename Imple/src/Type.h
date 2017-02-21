@@ -8,46 +8,52 @@
 #include <iostream>
 
 class Type {
-protected:
-    std::string _name;
-
 public :
-    explicit Type(const std::string& name) : _name(name) { }
     virtual size_t getSize() = 0;
-    virtual std::ostream& print(std::ostream& out) = 0;
-    virtual std::ostream& codegen(std::ostream& out) = 0;
-    std::string name() const;
+    virtual std::ostream& print(std::ostream& out) const = 0;
+    virtual std::ostream& codegen(std::ostream& out) const = 0;
+    virtual std::string name() const = 0;
+    virtual void base_name(const std::string&) = 0;
 };
 
 class SumType : public Type {
-    std::map<std::string,Type*> _types;
+    std::vector<Type*> _types;
+    std::string _name;
+
 public :
-    explicit SumType (const std::string& name, const std::map<std::string,Type*>& types)
-        : Type(name), _types(types) {}
+    explicit SumType (const std::vector<Type*>& types)
+        : _types(types) {}
     size_t getSize();
     std::ostream& print(std::ostream& out);
     std::ostream& codegen(std::ostream& out);
+    std::string name() const;
+    void base_name(const std::string&);
 };
 
 class ProdType : public Type {
     std::vector<Type*> _types;
+    std::string _name;
 public:
-    explicit ProdType (const std::string& name, const std::vector<Type*>& types)
-        : Type(name), _types(types) {}
+    explicit ProdType (const std::vector<Type*>& types)
+        : _types(types) {}
     size_t getSize();
     std::ostream& print(std::ostream& out);
     std::ostream& codegen(std::ostream& out);
+    std::string name() const;
+    void base_name(const std::string&);
 };
 
 class BasicType : public Type {
-    /* _name must be the name of a native c++ type */
+    std::string _ref;
     size_t _size;
 public :
-    explicit BasicType(const std::string& name,size_t size)
-        : Type(name), _size(size) {}
+    explicit BasicType(const std::string& ref,size_t size)
+        : _ref(ref), _size(size) {}
     inline size_t getSize(){return _size;}
     std::ostream& print(std::ostream& out);
     std::ostream& codegen(std::ostream& out);
+    std::string name() const;
+    void base_name(const std::string&);
 };
 
 
