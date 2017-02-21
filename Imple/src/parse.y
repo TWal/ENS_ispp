@@ -54,6 +54,7 @@ void yy::parser::error(const yy::location& loc,const std::string& st)
 %token  <std::string>   IDENT
 
 %parse-param {Scanner& scan}
+%parse-param {std::pair<std::string,Type*>& res}
 
 %code{
     // declare the parser fonction to call :
@@ -90,7 +91,9 @@ void yy::parser::error(const yy::location& loc,const std::string& st)
 %%
 
 program:
-        typeDeclaration
+        typeDeclaration {
+            res = $1;
+        }
     ;
 
 typeDeclaration:
