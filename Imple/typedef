@@ -1,0 +1,3 @@
+
+type tree = | node tree tree | leaf int;
+

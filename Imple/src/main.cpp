@@ -6,8 +6,11 @@ using namespace std;
 
 int main(){
     auto& input = cin;
-    Scanner scan(&input,"name of file for error"); // load scanner
-    pair<string,Type*> res;
-    yy::parser parser(scan,res); //load parser
+    Scanner scan(&input,"stderr"); // load scanner
+    Type* type;
+    yy::parser parser(scan,type); //load parser
     parser.parse(); //parse
+
+    cout << "Parsed type :" << endl;
+    cout << type << endl;
 }
