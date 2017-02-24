@@ -7,10 +7,13 @@ using namespace std;
 int main(){
     auto& input = cin;
     Scanner scan(&input,"stderr"); // load scanner
-    Type* type;
+    pair<string,Type*> type;
     yy::parser parser(scan,type); //load parser
     parser.parse(); //parse
 
+    map<string, Type*> defined;
+    defined.insert(type);
+
     cout << "Parsed type :" << endl;
-    cout << type << endl;
+    cout << type.second << endl;
 }

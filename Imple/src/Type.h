@@ -8,7 +8,11 @@
 #include <iostream>
 
 class Type {
+protected:
+    static std::map<std::string, Type*> _defined;
+
 public :
+    static void define(const std::map<std::string, Type*>& d);
     virtual size_t getSize() = 0;
     virtual std::ostream& print(std::ostream& out) const = 0;
     virtual std::ostream& codegen(std::ostream& out) const = 0;

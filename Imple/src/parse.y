@@ -54,7 +54,7 @@ void yy::parser::error(const yy::location& loc,const std::string& st)
 %token  <std::string>   IDENT
 
 %parse-param {Scanner& scan}
-%parse-param {Type*& res}
+%parse-param {std::pair<std::string,Type*>& res}
 
 %code{
     // declare the parser fonction to call :
@@ -79,7 +79,7 @@ void yy::parser::error(const yy::location& loc,const std::string& st)
 %type   <std::vector<Type*> > prodType
 %type   <std::vector<Type*> > sumType
 %type   <Type*> sumTypeElem
-%type   <Type*> typeDeclaration
+%type   <std::pair<std::string,Type*>> typeDeclaration
 
 //                      %precedence PRODCOMP
 //                      %precedence BAR
@@ -98,7 +98,7 @@ program:
 
 typeDeclaration:
         TYPE IDENT EQUAL type SEMICOLON
-        {$4->base_name($2); $$ = $4;}
+        {$4->base_name($2); $$ = make_pair($2,$4);}
     ;
 
 type:

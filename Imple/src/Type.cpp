@@ -6,6 +6,10 @@ using namespace std;
 ostream& operator << (ostream&out,Type* type){
     return type->print(out);
 }
+std::map<std::string, Type*> Type::_defined;
+void Type::define(const std::map<std::string, Type*>& d) {
+    _defined = d;
+}
 
 size_t SumType::getSize(){
     size_t res = 0;
@@ -30,7 +34,10 @@ std::string ProdType::name() const {
     return _name;
 }
 std::string BasicType::name() const {
-    return _ref;
+    if(_defined.find(_ref) != _defined.end())
+	return _defined[_ref]->name();
+    else
+	return _ref;
 }
 
 void SumType::base_name(const std::string& nm) {
@@ -40,6 +47,7 @@ void ProdType::base_name(const std::string& nm) {
     _name = nm + "_t";
 }
 void BasicType::base_name(const std::string&) {
+    /* Do nothing : base name is already set by construction */
 }
 
 
@@ -150,7 +158,7 @@ std::ostream& ProdType::codegen(std::ostream& out) const {
 }
 
 std::ostream& BasicType::codegen(std::ostream& out) const {
-    /* Nothing to do, it is a native c++ type */
+    /* Nothing to do, it is a native c++/already defined type */
     return out;
 }
 
