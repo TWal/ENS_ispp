@@ -60,6 +60,7 @@ public :
     void base_name(const std::string&);
 };
 
+std::ostream& operator << (std::ostream& out,const Type& type);
 
 
 

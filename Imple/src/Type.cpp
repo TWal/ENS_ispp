@@ -3,8 +3,8 @@
 
 using namespace std;
 
-ostream& operator << (ostream&out,Type* type){
-    return type->print(out);
+ostream& operator << (ostream&out,const Type& type){
+    return type.print(out);
 }
 std::map<std::string, Type*> Type::_defined;
 void Type::define(const std::map<std::string, Type*>& d) {
@@ -54,7 +54,7 @@ void BasicType::base_name(const std::string&) {
 std::ostream& SumType::print(std::ostream& out) const {
     out << _name << " (";
     for(auto p : _types){
-        out << "| " << p <<" ";
+        out << "| " << *p <<" ";
     }
     out << ")";
     return out;
@@ -62,12 +62,12 @@ std::ostream& SumType::print(std::ostream& out) const {
 std::ostream& ProdType::print(std::ostream& out) const {
     out << _name << " ";
     for(auto p : _types){
-        out <<  p <<" ";
+        out << *p <<" ";
     }
     return out;
 }
 std::ostream& BasicType::print(std::ostream& out) const {
-    return out << _ref;
+    return out << name();
 }
 
 std::ostream& SumType::codegen(std::ostream& out) const{
