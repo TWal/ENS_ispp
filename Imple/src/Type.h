@@ -18,6 +18,7 @@ public :
     virtual std::ostream& codegen(std::ostream& out) const = 0;
     virtual std::string name() const = 0;
     virtual void base_name(const std::string&) = 0;
+    virtual std::string base_name() const = 0;
 };
 
 class SumType : public Type {
@@ -32,6 +33,7 @@ public :
     std::ostream& codegen(std::ostream& out) const;
     std::string name() const;
     void base_name(const std::string&);
+    std::string base_name() const;
 };
 
 class ProdType : public Type {
@@ -45,6 +47,7 @@ public:
     std::ostream& codegen(std::ostream& out) const;
     std::string name() const;
     void base_name(const std::string&);
+    std::string base_name() const;
 };
 
 class BasicType : public Type {
@@ -58,6 +61,7 @@ public :
     std::ostream& codegen(std::ostream& out) const;
     std::string name() const;
     void base_name(const std::string&);
+    std::string base_name() const;
 };
 
 std::ostream& operator << (std::ostream& out,const Type& type);
