@@ -7,16 +7,35 @@
 #include <string>
 #include <iostream>
 
-class Type {
-protected:
-    static std::map<std::string, Type*> _defined;
+class Type;
 
+class Codegen {
+protected:
+    std::ostream& _out;
+    std::map<std::string, Type*> _defined;
+
+public:
+    explicit Codegen(std::ostream& out, const std::map<std::string, Type*>& defined)
+        : _out(out), _defined(defined)
+    { }
+    virtual void declare_prod(const std::string& name, const std::vector<Type*>& types) = 0;
+    virtual void gen_prod(const std::string& name, const std::vector<Type*>& types) = 0;
+    virtual std::string ref_prod(const std::string& name, const std::vector<Type*>& types) const = 0;
+    virtual void declare_sum(const std::string& name, const std::vector<Type*>& types) = 0;
+    virtual void gen_sum(const std::string& name, const std::vector<Type*>& types) = 0;
+    virtual std::string ref_sum(const std::string& name, const std::vector<Type*>& types) const = 0;
+    virtual void declare_basic(const std::string& name) = 0;
+    virtual void gen_basic(const std::string& name) = 0;
+    virtual std::string ref_basic(const std::string& name) const = 0;
+};
+
+class Type {
 public :
-    static void define(const std::map<std::string, Type*>& d);
     virtual size_t getSize() = 0;
     virtual std::ostream& print(std::ostream& out) const = 0;
-    virtual std::ostream& codegen(std::ostream& out) const = 0;
-    virtual std::string name() const = 0;
+    virtual void codegen(Codegen* gen) const = 0;
+    virtual void declare(Codegen* gen) const = 0;
+    virtual std::string ref(const Codegen* gen) const = 0;
     virtual void base_name(const std::string&) = 0;
     virtual std::string base_name() const = 0;
 };
@@ -30,8 +49,9 @@ public :
         : _types(types) {}
     size_t getSize();
     std::ostream& print(std::ostream& out) const;
-    std::ostream& codegen(std::ostream& out) const;
-    std::string name() const;
+    void codegen(Codegen* gen) const;
+    void declare(Codegen* gen) const;
+    std::string ref(const Codegen* gen) const;
     void base_name(const std::string&);
     std::string base_name() const;
 };
@@ -44,8 +64,9 @@ public:
         : _types(types) {}
     size_t getSize();
     std::ostream& print(std::ostream& out) const;
-    std::ostream& codegen(std::ostream& out) const;
-    std::string name() const;
+    void codegen(Codegen* gen) const;
+    void declare(Codegen* gen) const;
+    std::string ref(const Codegen* gen) const;
     void base_name(const std::string&);
     std::string base_name() const;
 };
@@ -58,15 +79,14 @@ public :
         : _ref(ref), _size(size) {}
     inline size_t getSize(){return _size;}
     std::ostream& print(std::ostream& out) const;
-    std::ostream& codegen(std::ostream& out) const;
-    std::string name() const;
+    void codegen(Codegen* gen) const;
+    void declare(Codegen* gen) const;
+    std::string ref(const Codegen* gen) const;
     void base_name(const std::string&);
     std::string base_name() const;
 };
 
 std::ostream& operator << (std::ostream& out,const Type& type);
 
-
-
-
 #endif
+
