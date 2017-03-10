@@ -12,6 +12,8 @@ int main(){
     pair<string,Type*> type;
     yy::parser parser(scan,type); //load parser
     parser.parse(); //parse
+    type.second->print(cerr);
+    cerr << endl;
 
     map<string,Type*> env;
     env["tree"] = type.second;
