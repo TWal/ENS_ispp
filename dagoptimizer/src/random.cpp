@@ -1,10 +1,10 @@
 #include "random.h"
 #include <algorithm>
 
-void findRandom(const Graph& gr) {
+void findRandom(const Graph& gr, lli nbIter) {
     vi perm = identityPermutation(gr.N);
     lli bestCost = INF;
-    while(true) {
+    FOR(i, nbIter) {
         lli cost = getCost(gr.adj, perm);
         if(cost < bestCost) {
             bestCost = cost;

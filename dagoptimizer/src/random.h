@@ -2,7 +2,7 @@
 #define RANDOM_H
 #include "utility.h"
 
-void findRandom(const Graph& gr);
+void findRandom(const Graph& gr, lli nbIter);
 
 #endif
 

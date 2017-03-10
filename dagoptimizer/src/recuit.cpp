@@ -7,10 +7,10 @@ void recuit(const Graph& gr) {
 
 const double INITIAL_TEMP = 100.0;
 const double TEMP_FACTOR = 0.999999;
-const double TEMP_STOP = 1;
+const double TEMP_STOP = 0.00001;
 
 double P(lli lastCost, lli newCost, double T) {
-    return max((double)1, exp((lastCost-newCost)/T));
+    return min((double)1, exp((lastCost-newCost)/T));
 }
 
 void recuit(const Graph& gr, vi perm) {
@@ -23,7 +23,7 @@ void recuit(const Graph& gr, vi perm) {
     lli stepCount = 0;
     while(T > TEMP_STOP) {
         if(stepCount%50000 == 0) {
-            printf("BestCost: %lld\tCost:%lld\tT:%lf\r", bestCost, lastCost, T);
+            printf("Cost: %lld\tBestCost:%lld\tT:%lf\r", lastCost, bestCost, T);
         }
         lli n1 = distint(gen);
         lli n2 = distint(gen);
