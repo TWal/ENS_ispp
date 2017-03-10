@@ -17,17 +17,17 @@ class Scanner;
 
 
 
-using namespace std;
+//using namespace std;
 
 void error (const yy::location& loc,const std::string& st){
     //cout << "hey" << endl;
     if(loc.begin.line != loc.end.line)
-        cerr <<"File \"" << *loc.begin.filename << "\" , line "
-             << loc.begin.line << "-" << loc.end.line << " : " << st<< endl;
+        std::cerr <<"File \"" << *loc.begin.filename << "\" , line "
+             << loc.begin.line << "-" << loc.end.line << " : " << st<< std::endl;
      else
-         cerr <<"File \"" << *loc.begin.filename << "\" , line "
+         std::cerr <<"File \"" << *loc.begin.filename << "\" , line "
               << loc.begin.line << ", characters " << loc.begin.column
-              << "-" << loc.end.column <<": " << st<< endl;
+              << "-" << loc.end.column <<": " << st<< std::endl;
      exit(EXIT_FAILURE);
 }
 
@@ -45,7 +45,7 @@ void yy::parser::error(const yy::location& loc,const std::string& st)
 %define lr.type ielr
 
 // Token declaration
-%token TYPE
+%token TYP
 
 //operator declaration
 %token EQUAL COMMA BAR LP RP LTEMP RTEMP SEMICOLON
@@ -97,7 +97,7 @@ program:
     ;
 
 typeDeclaration:
-        TYPE IDENT EQUAL type SEMICOLON
+        TYP IDENT EQUAL type SEMICOLON
         {$4->base_name($2); $$ = make_pair($2,$4);}
     ;
 
@@ -120,7 +120,7 @@ prodTypeElem:
 prodType:
         prodTypeElem prodTypeElem {$$ = {$1,$2};}
     |
-    prodType prodTypeElem {$1.push_back($2); $$ = $1;}
+        prodType prodTypeElem {$1.push_back($2); $$ = $1;}
     ;
 
 sumType:
