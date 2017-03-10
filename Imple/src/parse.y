@@ -75,8 +75,8 @@ void yy::parser::error(const yy::location& loc,const std::string& st)
 
 %type   <Type*> type
 %type   <Type*> prodTypeElem
-%type   <Type*> intType
 %type   <std::vector<Type*> > prodType
+%type   <std::vector<Type*> > prodTypeSum
 %type   <std::vector<Type*> > sumType
 %type   <Type*> sumTypeElem
 %type   <std::pair<std::string,Type*>> typeDeclaration
@@ -123,22 +123,20 @@ prodType:
         prodType prodTypeElem {$1.push_back($2); $$ = $1;}
     ;
 
+prodTypeSum:
+        prodTypeElem {$$ = {$1};}
+    |
+        prodTypeSum prodTypeElem {$1.push_back($2); $$ = $1;}
+    ;
+
 sumType:
         sumTypeElem {$$ = {$1};}
     |
         sumType sumTypeElem {$1.push_back($2); $$ = $1;}
     ;
 
-intType:
-        LP type RP {$$ = $2;}
-    |
-        IDENT {$$ = new BasicType($1,0);}
-    |
-        prodType {$$ = new ProdType($1);}
-    ;
-
 sumTypeElem:
-        BAR IDENT intType {$3->base_name($2); $$ = $3;}
+        BAR IDENT prodTypeSum {$$ = new ProdType($3); $$->base_name($2);}
     ;
 
 %%
