@@ -11,6 +11,8 @@ struct Graph {
 
 lli getCost(const vvi& graph, const vi& perm);
 Graph readGraph(FILE* fd);
+vi identityPermutation(lli size);
+void printPerm(const vi& perm);
 
 #endif
 

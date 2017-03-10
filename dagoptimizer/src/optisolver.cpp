@@ -1,9 +1,9 @@
 #include "optisolver.h"
+#include <algorithm>
 
 OptiSolverResults optiSolve(const Graph& gr) {
     OptiSolverResults res;
-    vi perm(gr.N);
-    FOR(i, gr.N) perm[i] = i;
+    vi perm = identityPermutation(gr.N);
     do {
         lli cur = getCost(gr.adj, perm);
         if(cur < res.cost) {
@@ -20,6 +20,6 @@ OptiSolverResults optiSolve(const Graph& gr) {
 void printSolutions(const OptiSolverResults& res) {
     printf("Got %lu solutions with cost %lld:\n", res.sols.size(), res.cost);
     for(const vi& perm : res.sols) {
-        FOR(i, perm.size()) printf("%lld%c", perm[i], " \n"[i+1 == (lli)perm.size()]);
+        printPerm(perm);
     }
 }

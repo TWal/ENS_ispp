@@ -1,4 +1,5 @@
 #include "utility.h"
+#include <random>
 
 static lli f(lli a, lli b) {
     return abs(a-b);
@@ -33,3 +34,14 @@ Graph readGraph(FILE* fd) {
     }
     return res;
 }
+
+vi identityPermutation(lli size) {
+    vi perm(size);
+    FOR(i, size) perm[i] = i;
+    return perm;
+}
+
+void printPerm(const vi& perm) {
+    FOR(i, perm.size()) printf("%lld%c", perm[i], " \n"[i+1 == (lli)perm.size()]);
+}
+
