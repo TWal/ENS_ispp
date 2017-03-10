@@ -29,6 +29,7 @@ label  {letter}({letter}|{digit}|_)*
 
 %%
 [ \t]
+"\n" { assert(loc);loc->lines();}
 "="  {return token::EQUAL;}
 ","  {return token::COMMA;}
 "<"  {return token::LTEMP;}
@@ -38,9 +39,11 @@ label  {letter}({letter}|{digit}|_)*
 "|"  {return token::BAR;}
 ";"  {return token::SEMICOLON;}
 
-type {return token::TYPE;}
+"type" {return token::TYP;}
 
-label {yyval->build(yytext); return token::IDENT;}
+[[:alpha:]]([[:alnum:]])* { yyval->build(std::string(yytext)); return token::IDENT;}
+
+. { error(*loc,"unknown token");}
 
 
 
