@@ -1,11 +1,13 @@
-type produit : (..,..,..)
+type produit : Cons (..,..,..)
 type Somme  : Machin ..
 
 indentifant à toute les vars (compteur global) +
 
-15613 < (116,1561,61)
+15613 < PROD (116,1561,61)
 
-15613 < MACHIN 464
+15613 < SUM as CONS 698
 
-(1561,56,1,516) < 1535
+PROD (1561,56,1,516) < 1535
+
+SUM as CONS 1561 < 1535
 
