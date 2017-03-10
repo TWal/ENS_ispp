@@ -18,12 +18,21 @@ public:
     explicit Codegen(std::ostream& out, const std::map<std::string, Type*>& defined)
         : _out(out), _defined(defined)
     { }
+    virtual void define(const std::vector<Type*>& ts) = 0;
+    virtual void declare(const std::vector<Type*>& ts) = 0;
+    virtual void codegen(const std::vector<Type*>& ts) = 0;
+
+    virtual void define_prod(const std::string& name, const std::vector<Type*>& types) = 0;
     virtual void declare_prod(const std::string& name, const std::vector<Type*>& types) = 0;
     virtual void gen_prod(const std::string& name, const std::vector<Type*>& types) = 0;
     virtual std::string ref_prod(const std::string& name, const std::vector<Type*>& types) const = 0;
+
+    virtual void define_sum(const std::string& name, const std::vector<Type*>& types) = 0;
     virtual void declare_sum(const std::string& name, const std::vector<Type*>& types) = 0;
     virtual void gen_sum(const std::string& name, const std::vector<Type*>& types) = 0;
     virtual std::string ref_sum(const std::string& name, const std::vector<Type*>& types) const = 0;
+
+    virtual void define_basic(const std::string& name) = 0;
     virtual void declare_basic(const std::string& name) = 0;
     virtual void gen_basic(const std::string& name) = 0;
     virtual std::string ref_basic(const std::string& name) const = 0;
@@ -35,9 +44,11 @@ public :
     virtual std::ostream& print(std::ostream& out) const = 0;
     virtual void codegen(Codegen* gen) const = 0;
     virtual void declare(Codegen* gen) const = 0;
+    virtual void define(Codegen* gen) const = 0;
     virtual std::string ref(const Codegen* gen) const = 0;
     virtual void base_name(const std::string&) = 0;
     virtual std::string base_name() const = 0;
+    virtual bool is_native(const std::map<std::string, Type*>& defined) const = 0;
 };
 
 class SumType : public Type {
@@ -51,9 +62,11 @@ public :
     std::ostream& print(std::ostream& out) const;
     void codegen(Codegen* gen) const;
     void declare(Codegen* gen) const;
+    void define(Codegen* gen) const;
     std::string ref(const Codegen* gen) const;
     void base_name(const std::string&);
     std::string base_name() const;
+    bool is_native(const std::map<std::string, Type*>& defined) const;
 };
 
 class ProdType : public Type {
@@ -66,9 +79,11 @@ public:
     std::ostream& print(std::ostream& out) const;
     void codegen(Codegen* gen) const;
     void declare(Codegen* gen) const;
+    void define(Codegen* gen) const;
     std::string ref(const Codegen* gen) const;
     void base_name(const std::string&);
     std::string base_name() const;
+    bool is_native(const std::map<std::string, Type*>& defined) const;
 };
 
 class BasicType : public Type {
@@ -81,9 +96,11 @@ public :
     std::ostream& print(std::ostream& out) const;
     void codegen(Codegen* gen) const;
     void declare(Codegen* gen) const;
+    void define(Codegen* gen) const;
     std::string ref(const Codegen* gen) const;
     void base_name(const std::string&);
     std::string base_name() const;
+    bool is_native(const std::map<std::string, Type*>& defined) const;
 };
 
 std::ostream& operator << (std::ostream& out,const Type& type);

@@ -29,7 +29,9 @@ int main(){
     env["tree"] = tree;
     BasicCodegen gen(cout, env);
 
-    tree->declare(&gen);
-    tree->codegen(&gen);
+    std::vector<Type*> decls(1, tree);
+    gen.define(decls);
+    gen.declare(decls);
+    gen.codegen(decls);
     return 0;
 }

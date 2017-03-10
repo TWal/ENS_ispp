@@ -81,6 +81,16 @@ void ProdType::declare(Codegen* gen) const {
 void BasicType::declare(Codegen* gen) const {
     gen->declare_basic(_ref);
 }
+    
+void SumType::define(Codegen* gen) const {
+    gen->define_sum(_name, _types);
+}
+void ProdType::define(Codegen* gen) const {
+    gen->define_prod(_name, _types);
+}
+void BasicType::define(Codegen* gen) const {
+    gen->define_basic(_ref);
+}
 
 std::string SumType::ref(const Codegen* gen) const {
     return gen->ref_sum(_name, _types);
@@ -90,4 +100,14 @@ std::string ProdType::ref(const Codegen* gen) const {
 }
 std::string BasicType::ref(const Codegen* gen) const {
     return gen->ref_basic(_ref);
+}
+    
+bool SumType::is_native(const std::map<std::string, Type*>&) const {
+    return false;
+}
+bool ProdType::is_native(const std::map<std::string, Type*>&) const {
+    return false;
+}
+bool BasicType::is_native(const std::map<std::string, Type*>& defined) const {
+    return defined.find(_ref) == defined.end();
 }
