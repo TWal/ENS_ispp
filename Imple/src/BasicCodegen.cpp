@@ -38,7 +38,7 @@ void BasicCodegen::gen_sum(const std::string& name, const std::vector<Type*>& ty
         /* Logging */
         _out << "    ret->id = ++__count;" << endl;
         _out << "    cerr << ret->id << \" < " << name << " as " << types[i]->base_name() << " \" << "
-             << (types[i]->is_native(_defined) ? "\"" + types[i]->base_name() + "=\" << b"
+             << (types[i]->is_native(_defined) ? "\"[\" << sizeof(" + types[i]->base_name() + ") << \"]\""
                                                : "b->get_id()")
              << " << endl;" << endl;
         /* End of logging */
@@ -60,7 +60,7 @@ void BasicCodegen::gen_sum(const std::string& name, const std::vector<Type*>& ty
         _out << "        case " << i << ": " << endl;
         /* Logging */
         _out << "            cerr << \"" << name << " as " << types[i]->base_name() << " \" << ";
-        if(types[i]->is_native(_defined)) _out << types[i]->base_name() << " << \"=\" << v->m" << i;
+        if(types[i]->is_native(_defined)) _out << "\"[\" << sizeof(" << types[i]->base_name() << ") << \"]\"";
         else _out << "v->m" << i << "->get_id()";
         _out << " << \" < \" << v->id << endl;" << endl;
         /* End of logging */
@@ -162,10 +162,10 @@ void BasicCodegen::gen_prod(const std::string& name, const std::vector<Type*>& t
     /* Logging */
     _out << "    bd->id = ++__count;" << endl;
     _out << "    cerr << bd->id << \" < " << name << " (\" << ";
-    _out << (types[0]->is_native(_defined) ? "\"" + types[0]->base_name() + "=\" << m0"
+    _out << (types[0]->is_native(_defined) ? "\"[\" << sizeof(" + types[0]->base_name() + ") << \"]\""
                                            : "m0->get_id()");
     for(size_t i = 1; i < types.size(); ++i) {
-        if(types[i]->is_native(_defined)) _out << " << \", " << types[i]->base_name() << "=\" << m" << i;
+        if(types[i]->is_native(_defined)) _out << " << \"[\" << sizeof(" << types[i]->base_name() << ") << \"]\"";
         else _out << " << \", \" << m" << i << "->get_id()";
     }
     _out << " << \")\" << endl;" << endl;
@@ -186,11 +186,11 @@ void BasicCodegen::gen_prod(const std::string& name, const std::vector<Type*>& t
     /* Logging */
     _out << "    cerr << \"" << name << " (\" << ";
     if(!types[0]->is_native(_defined)) _out << "v->m0->get_id()";
-    else _out << "\"" << types[0]->base_name() << "=\" << v->m0";
+    else _out << "\"[\" << sizeof(" << types[0]->base_name() << ") << \"]\"";
     for(size_t i = 1; i < types.size();++i) {
         _out << " << \", \" << ";
         if(!types[i]->is_native(_defined)) _out << "v->m" << i << "->get_id()";
-        else _out << "\"" << types[i]->base_name() << "=\" << v->m" << i;
+        else _out << "\"[\" << sizeof(" << types[i]->base_name() << ") << \"]\"";
     }
     _out << " << \") < \" << v->get_id() << endl;" << endl;
     /* End of logging */
