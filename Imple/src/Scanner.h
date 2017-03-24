@@ -5,7 +5,7 @@
 #include<FlexLexer.h>
 #endif
 
-#include"parse.hpp"
+#include"../out/parse.hpp"
 
 //Scanning class
 class Scanner : public yyFlexLexer
