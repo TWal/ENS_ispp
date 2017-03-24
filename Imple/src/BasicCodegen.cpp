@@ -49,10 +49,12 @@ void BasicCodegen::gen_sum(const std::string& name, const std::vector<Type*>& ty
     }
 
     /* Matching */
-    _out << "template <typename T>" << endl;
+    _out << "template <typename T";
+    for(size_t i = 0; i < types.size(); ++i) _out << ", typename F" << i;
+    _out << ">" << endl;
     _out << "T " << name << "_t::match(" << ref_sum(name,types) << " v";
     for(size_t i = 0; i < types.size(); ++i) {
-        _out << ", const function<T(" << types[i]->ref(this) << ")>& f" << i;
+        _out << ", const F" << i << "& f" << i;
     }
     _out << ") {" << endl;
     _out << "    switch(v->type) {" << endl;
@@ -95,10 +97,12 @@ void BasicCodegen::declare_sum(const std::string& name, const std::vector<Type*>
         _out << "    static " << ref_sum(name, types) << " build_" << types[i]->base_name()
             << "(" << types[i]->ref(this) << " b);" << endl;
     }
-    _out << "    template <typename T>" << endl;
+    _out << "    template <typename T";
+    for(size_t i = 0; i < types.size(); ++i) _out << ", typename F" << i;
+    _out << ">" << endl;
     _out << "    static T match(" << ref_sum(name,types) << " v";
     for(size_t i = 0; i < types.size(); ++i) {
-        _out << ", const function<T(" << types[i]->ref(this) << ")>& f" << i;
+        _out << ", const F" << i << "& f" << i;
     }
     _out << ");" << endl;
     _out << "    unsigned long long get_id() const;" << endl;
@@ -131,13 +135,8 @@ void BasicCodegen::declare_prod(const std::string& name, const std::vector<Type*
         _out << "," << types[i]->ref(this) << " m" << i;
     }
     _out << ");" << endl;
-    _out << "template <typename T>" << endl;
-    _out << "static T match(" << ref_prod(name,types) << " v, const std::function<T("
-        << types[0]->ref(this);
-    for(size_t i = 1; i < types.size(); ++i) {
-        _out << ", " << types[i]->ref(this);
-    }
-    _out << ")>& f);" << endl;
+    _out << "template <typename T, typename F>" << endl;
+    _out << "static T match(" << ref_prod(name,types) << " v, const F& f);" << endl;
     _out << "    unsigned long long get_id() const;" << endl;
     _out << "};" << endl;
     for(auto t : types) t->declare(this);
@@ -176,13 +175,8 @@ void BasicCodegen::gen_prod(const std::string& name, const std::vector<Type*>& t
     _out << endl;
 
     /* Matching */
-    _out << "template <typename T>" << endl;
-    _out << "T " << name << "_t::match(" << ref_prod(name,types) << " v, const std::function<T("
-        << types[0]->ref(this);
-    for(size_t i = 1; i < types.size(); ++i) {
-        _out << ", " << types[i]->ref(this);
-    }
-    _out << ")>& f) {" << endl;
+    _out << "template <typename T, typename F>" << endl;
+    _out << "T " << name << "_t::match(" << ref_prod(name,types) << " v, const F& f) {" << endl;
     /* Logging */
     _out << "    cerr << \"" << name << " (\" << ";
     if(!types[0]->is_native(_defined)) _out << "v->m0->get_id()";
