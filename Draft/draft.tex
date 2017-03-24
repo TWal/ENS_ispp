@@ -1,0 +1,77 @@
+\documentclass[12pt]{article}
+
+\input{init.tex}
+
+
+\usepackage[bottom=2cm,left=2cm,right=2cm,top=2cm]{geometry}
+
+\title{Automated methods for optimizing cache on algebraic data structure}
+
+\author{Thibaut Pérami, Théophile Wallez and Luc Chabassier}
+
+
+\begin{document}
+
+\maketitle
+
+
+\section{Abstract}
+
+The speed of modern processors is nearly entirely determined by RAM access and
+especially the number of cache misses. Lots of widely use data structure are
+quite cache-friendly : array, matrices, but others like linked list, tree or
+more complex construction with sum and product types are far more difficult to
+optimize.
+
+In this paper we try to implement automated code generation of cache optimized
+representation of algebraic types depending of the concrete algorithm
+implemented. Currently most functional compiler implement algebraic type with
+lots of pointer and dispersed pieces of data across the RAM (depending of the
+garbage collector implementation). We try to create parametric implementations
+of compacted representation of these structures and to tune them automatically
+depending on the input algorithm.
+
+\section{Cache and complex structures}
+
+\subsection{Cache Structure}
+
+TODO : blabla à propos des niveaux des caches du temps d'accès des modèles de
+caches utilisé ...
+
+\subsection{Model used}
+
+\subsection{DAG structure}
+
+\section{Naive Implementation}
+
+The naive implementation of algebraic type consist in using different memory
+block for every node : data is dispersed in RAM and blocks have pointer to
+other blocks.
+
+
+
+\section{Parametric Implementation}
+
+\subsection{Block allocation}
+
+\subsection{Compact trees}
+
+
+\section{Possible Analysis on execution traces}
+
+\subsection{execution logs}
+
+\subsection{Statistics}
+
+\section{Experimental Results}
+
+
+
+\section{Conclusion}
+
+
+
+
+
+
+\end{document}

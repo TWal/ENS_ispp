@@ -1,0 +1,240 @@
+
+
+\usepackage[utf8]{inputenc} 
+\usepackage[T1]{fontenc}      
+\usepackage[francais]{babel} 
+%\DecimalMathComma
+%\usepackage[top=2cm, bottom=2cm, left=1cm, right=1cm]{geometry}
+
+% maths packages
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsopn}
+%\usepackage{mhsetup}
+%\usepackage{mathtools}
+\usepackage{mathrsfs}
+\usepackage{amsthm}
+\usepackage{yhmath}
+\usepackage{stmaryrd}
+\PassOptionsToPackage{all}{stmaryrd}
+\usepackage{graphicx}
+\usepackage{sistyle}
+\usepackage[version=3]{mhchem}
+\usepackage{asymptote}
+\usepackage{bigints}
+\usepackage[hidelinks]{hyperref}
+\usepackage{centernot}
+%\usepackage{dsfont}
+\usepackage{bbm}
+\usepackage{esint}
+\usepackage{enumerate}
+\usepackage{xspace}
+\usepackage{bussproofs}
+
+
+\SIdecimalsign{,}
+\SIthousandsep{} 
+
+
+\theoremstyle{definition}
+\newtheorem{regle}{Règle}
+%\newtheorem{theorem}{Théorème}
+\newtheorem{axi}{Axiome}
+\newtheorem{defin}{Définition}
+\newtheorem{prop}{Proposition}
+\newtheorem{dem}{Démonstration}
+
+%racourci pour certain symbole
+
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+
+%joli ensemble vide
+\let\oldemptyset\emptyset
+\let\emptyset\varnothing
+
+% flèche d'implication qui s'adapte en largeur au texte au dessus.
+
+\makeatletter
+\newcommand*{\newextarrow}[3] {%
+   \newcommand*{#1}[2][]{\ext@arrow #2{\arrowfill@#3}{##1}{##2}}
+}
+
+
+
+%\newcommand{\xRightarrow}[2][]{\ext@arrow 0359\Rightarrowfill@{#1}{#2}}
+\makeatother
+
+\newextarrow{\xRightarrow}{0959}{\Relbar\Relbar\Rightarrow}
+\newextarrow{\xhookrightarrow}{99{15}{15}}{{\lhook\joinrel\relbar}\relbar\rightarrow}
+\newextarrow{\xtwoheadrightarrow}{9{15}{15}{15}}{\relbar\relbar \twoheadrightarrow}
+\newextarrow{\xtwoheadhookrightarrow}{9{15}{15}{15}}{{\lhook\joinrel\relbar}\relbar\twoheadrightarrow}
+
+
+%symbole avec du texte au dessus ou en dessous
+\newcommand{\eqat}[1]{\,\mathop{=}\limits_{#1}\,}
+\newcommand{\simat}[2][]{\,\mathop{\sim}\limits_{#2}^{#1}\,}
+\newcommand{\toat}[2][]{\xrightarrow[#2]{#1}}
+\newcommand{\impwith}[1]{\xRightarrow[]{#1}}
+\renewcommand{\O}[1][]{\underset{#1}{\mathrm{O}}}
+\renewcommand{\o}[1][]{\underset{#1}{\mathrm{o}}}
+
+%intégrale :
+\newcommand{\dd}{\;\mathrm{d}}
+
+%displaystyle en raccourci :
+\newcommand{\ds}[1]{\displaystyle #1}
+\newcommand{\dsfrac}[2]{\dfrac{\ds{#1}}{\ds{#2}}}
+
+% mot clés en environement mathématique (et et ou sont des opérateur de logique contrairement aux autres) :
+\newcommand{\et}{\;\mathrel{\mathrm{et}}\;}
+%\newcommand{\et}{\mathrel{\mathrm{et}}
+\newcommand{\ou}{\;\mathrel{\mathrm{ou}}\;}
+\newcommand{\car}{\text{ car }} 
+\newcommand{\si}{\text{ si }}
+\newcommand{\av}{\text{ avec }}
+\newcommand{\on}{\text{ on a : }}
+
+\newcommand{\tq}{\mathrel{|}}% tel que avec un espacement adapté
+\newcommand{\com}{,\;}
+
+%fonction math
+\newcommand{\sh}{\qopname\relax o{sh}}
+\newcommand{\ch}{\qopname\relax o{ch}}
+\renewcommand{\th}{\qopname\relax o{th}}
+\newcommand{\ash}{\qopname\relax o{arcsh}}
+\newcommand{\ach}{\qopname\relax o{arcch}}
+\newcommand{\sinc}{\qopname\relax o{sinc}}
+\renewcommand{\Re}{\qopname\relax o{Re}}
+\renewcommand{\Im}{\qopname\relax o{Im}}
+\newcommand{\Ker}{\qopname\relax o{Ker}}
+\newcommand{\Vect}{\qopname\relax o{Vect}}
+\newcommand{\fun}{\qopname\relax o{\mathcal{F}}}%ensemble des fonctions
+\newcommand{\cont}{\qopname\relax o{\mathscr{C}}}%ensemble des fonctions continue
+\newcommand{\lin}{\qopname\relax o{\mathscr{L}\!}}%ensemble des applications linéaire
+\renewcommand{\L}{\qopname\relax o{\mathrm{L}}}%ensemble des applications itégrable
+\newcommand{\Lr}{\qopname\relax o{\mathcal L}}%ensemble des applications itégrable
+\newcommand{\Mat}{\qopname\relax o{\mathcal{M}}}%ensemble des matrices
+\newcommand{\Tr}{\qopname\relax o{Tr}}%trace
+\newcommand{\Com}{\qopname\relax o{Com}}%co-matrice
+
+\newcommand{\pde}{{\qopname\relax o{\mathcal{P}}}}% partie de
+\newcommand{\rg}{\qopname\relax o{rg}}%rang
+\newcommand{\Id}{\qopname\relax o{Id}}
+\newcommand{\gr}{\qopname\relax o{gr}}%groupe engendré
+\newcommand{\val}{\qopname\relax o{val}}
+\newcommand{\toMat}{\qopname\relax o{Mat}}
+\renewcommand{\t}{{\,{}^t\!}}
+\newcommand{\ki}{\qopname\relax o{\raisebox{0.5ex}{$\chi$}}}
+\newcommand{\Conv}{\qopname\relax o{Conv}}%  enveloppe convexeS
+\newcommand{\esp}{\qopname\relax o{E}}
+\newcommand{\var}{\qopname\relax o{V}}
+\renewcommand{\Pr}{\qopname\relax o{P}}
+\newcommand{\cov}{\qopname\relax o{Cov}}
+\newcommand{\Bij}{\qopname\relax o{Bij}}%ensemble des Bijections
+\newcommand{\Aut}{\qopname\relax o{Aut}}%ensemble des Automorphismes
+\newcommand{\Inn}{\qopname\relax o{Inn}}%ensemble des Automorphismes Intérieurs
+
+
+% ici pour choisir entre le cardinal "Card" et le cardinal "#"
+%\newcommand{\card}{\qopname\relax o{Card}} 
+\newcommand{\card}{\mathopen {\mbox{\raisebox{0.1ex}{\#\!}}}}
+
+
+
+%racourci matrice
+\newcommand{\stack}[1]{\begin{matrix}#1\end{matrix}}
+\newcommand{\mat}[1]{\begin{pmatrix}#1\end{pmatrix}}
+\newcommand{\mdet}[1]{\begin{vmatrix}#1\end{vmatrix}}
+\newcommand{\comb}[2]{\mat{#1\\#2}}
+
+
+% vecteurs
+\newcommand{\bvec}[1]{\overrightarrow{#1}}
+\newcommand{\vvv}{|\!|\!|}
+
+%complexes physique
+\newcommand{\co}[1]{\underline{#1}}
+\newcommand{\cv}[1]{\vec {\co #1}}
+
+%opérateurs vectoriels
+\newcommand{\grad}{\qopname\relax o{\bvec{\mathrm{grad}}}}
+\newcommand{\rot}{\qopname\relax o{\bvec{\mathrm{rot}}}}
+\newcommand{\Rot}{\qopname\relax o{Rot}}
+\let\pdiv\div
+\renewcommand{\div}{\qopname\relax o{div}}
+
+%fonction physique
+\newcommand{\nox}{\qopname\relax o{no}}
+
+%crochet dans les intervalle d'entiers:
+\newcommand{\ldb}{\llbracket}
+\newcommand{\rdb}{\rrbracket}
+
+%raccourci pour la logique
+
+\newcommand{\imp}{\;\Rightarrow\;}
+\newcommand{\nimp}{\;\nRightarrow\;}
+\newcommand{\eq}{\;\Leftrightarrow\;}
+\newcommand{\beq}{\Leftrightarrow\;}
+\newcommand{\noteq}{\;\nLeftrightarrow\;}
+
+
+
+%grands ensembles
+\newcommand{\R}{\ensuremath{\mathbb{R}}}
+\newcommand{\Rb}{\ensuremath{\overline{\mathbb{R}}}}
+\newcommand{\N}{\ensuremath{\mathbb{N}}}
+\newcommand{\Q}{\ensuremath{\mathbb{Q}}}
+\newcommand{\Z}{\ensuremath{\mathbb{Z}}}
+\newcommand{\C}{\ensuremath{\mathbb{C}}}
+\newcommand{\U}{\ensuremath{\mathbb{U}}}
+\newcommand{\F}{\ensuremath{\mathbb{F}}}
+\newcommand{\ind}[1]{\mathbbm{1}_{\!#1}}
+
+
+% pi sur deux et modulo 2 pi
+\newcommand{\gpide}{\dfrac{\pi}{2}}
+\newcommand{\pide}{\frac{\pi}{2}}
+\newcommand{\ppide}{\tfrac{\pi}{2}}
+\newcommand{\mdp}{[2\pi]}
+
+
+%encadré aligné dans un environement align : 
+%\alignedbox{partie avant le égal}{= partie après le égal}
+
+\newlength\dlf 
+\newcommand\alignedbox[2]{
+&  % Alignment sign of the line
+	{
+	\settowidth\dlf{$\displaystyle #1$}  
+	    % The width of \dlf is the width of the lhs, with a displaystyle font
+	\addtolength\dlf{\fboxsep+\fboxrule}  
+	    % Add to it the distance to the box, and the width of the line of the box
+	\hspace{-\dlf}  
+	    % Move everything dlf units to the left, so that & #1 #2 is aligned under #1 & #2
+	\boxed{#1 #2}
+	    % Put a box around lhs and rhs
+	}
+}
+
+%Opérateurs : 
+%\bsum{taille)}
+
+
+\newcommand{\gcup}{ \mathop {\mbox{ $\ds\bigcup$\scalebox{1.0}[1.3]{$\uparrow$}}} }
+\newcommand{\gcap}{ \mathop {\mbox{ $\ds\bigcap$\scalebox{1.0}[1.3]{$\downarrow$}}} }
+\newcommand{\bigger}[2]{\mathop {\mbox{\scalebox{#2}{$\ds#1$}}}\limits}
+
+\newcommand{\bsum}[1]{\mathop {\mbox{\scalebox{#1}{$\ds{\sum}$}}}\limits}
+% pointillé mieux
+
+\newcommand{\dddots}{\mbox{\scalebox{0.85}[1.15]{$\ddots$}}}
+
+%définition d'application
+\newcommand{\app}[2][0cm]{\hspace{-#1} \mbox{\raisebox{- \height+2ex}{$\begin{aligned}#2
+\end{aligned}$}} }
+\newcommand{\capp}[2][0cm]{\hspace{-#1} \mbox{\raisebox{- \height+2ex}{$\left [\begin{aligned}#2
+\end{aligned}\right ]$}} }
+
