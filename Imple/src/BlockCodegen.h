@@ -9,14 +9,16 @@
 #include "Type.h"
 
 struct Block {
-    size_t size;
-    int filling_min; /* for 1000 */
-    int filling_max; /* for 1000 */
+    size_t size;     /* number of subblocks */
+    int filling_min; /* in number of subblocks */
+    int filling_max; /* in number of subblocks */
 };
 
 class BlockCodegen : Codegen {
 protected:
     std::vector<Block> _blocks;
+    size_t real_size(size_t id);
+    void find_block(const std::string& name);
 
 public:
     explicit BlockCodegen(std::ostream& out,
