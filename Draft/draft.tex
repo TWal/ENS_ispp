@@ -42,6 +42,33 @@ caches utilisé ...
 
 \subsection{DAG structure}
 
+\subsection{Objectives}
+
+Or objective is to show how from a simple input : a description of a algebraic
+types and a programming code using them.
+
+Currently our test code take algebraic type with a simple format :
+
+\verb$ type tree = | Node tree tree | Leaf$
+
+And the code can be used in the following way : 
+
+...
+
+From that we first compile against a naive implementation of the algebraic type
+execute it. This version also log all construction/deconstruction operation by
+numbering all variables and write a file like :
+
+\verb$107 < (12,56,78)$
+
+We can then analyze this trace of execution and extract statistics from it (cf.
+section \ref{logs}). From
+those statistics we try to deduce the most optimal way to encode it in memory by
+tuning the input value of some parametric structures (cf. section \ref{paramImplem})
+
+
+
+
 \section{Naive Implementation}
 
 The naive implementation of algebraic type consist in using different memory
@@ -51,15 +78,42 @@ other blocks.
 
 
 \section{Parametric Implementation}
+\label{paramImplem}
+
+As we can't (or its completely out of our reach) write code
+depending on the input, we have chosen to write ``parametric code'' : code that
+depends on some integer/real parameters and we just try to automatically tweak
+those parameters depending of the input code. 
 
 \subsection{Block allocation}
 
-\subsection{Compact trees}
+This methods is a simple idea to gather data close together. We regroup data in
+blocks and blocks on other blocks. We define $N +1$ levels of blocks from 0 to
+$N$. The level 0 store elementary structure, level 0 block are just a block of
+data with no structure.
+
+For each other level $i$, we store block of size $i-1$, At each level we define
+$\alpha_i$ the minimum ratio of $i-1$ blocks.
+
+
+\paragraph{TODO :} Fusion and split algorithm, other meta-data description (link
+with other blocks)
+
+
+
+
+\subsection{Compact trees \& pointer elimination}
+
+
+
+
+
 
 
 \section{Possible Analysis on execution traces}
+\label{logs}
 
-\subsection{execution logs}
+\subsection{Execution logs}
 
 \subsection{Statistics}
 
