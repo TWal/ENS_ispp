@@ -42,6 +42,16 @@ caches utilisé ...
 
 \subsection{DAG structure}
 
+We can see the instanciations $v_1, \dots, v_n$ of our types as the vertexes of a directed graph $(V, E)$ where $(v_i, v_j) \in E$ means that $v_i$ has a pointer to $v_j$.
+If we want to ensure data locality, when $v_i$ has a pointer to $v_j$ we want them to be close in memory.
+
+Therefore, we want to choose some bijective function $f : V \to \{1, |V|\}$ such that \[ \sum_{(v, v') \in E} d(f(v), f(v')) \] is minimal, where $d$ is distance function.
+We want $d$ to be translation invariant, symetrical, \dots, so $d(x, y) = J(x-y)$ for some even convex function $J$, with $J(0) = 0$.
+
+We implemented a brute-force algorithm and simulated annealing to find (near-)optimal such $f$.
+
+We can also make minimum $k$-cut of this graph to reduce pointers TODO
+
 \subsection{Objectives}
 
 Our objective is to show how from a simple input : a description of an algebraic
