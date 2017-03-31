@@ -18,15 +18,15 @@
 \section{Abstract}
 
 The speed of modern processors is nearly entirely determined by RAM access and
-especially the number of cache misses. Lots of widely use data structure are
+especially the number of cache misses. Lots of widely used data structures are
 quite cache-friendly : array, matrices, but others like linked list, tree or
-more complex construction with sum and product types are far more difficult to
+more complex construction with sum and product data types are far more difficult to
 optimize.
 
 In this paper we try to implement automated code generation of cache optimized
-representation of algebraic types depending of the concrete algorithm
-implemented. Currently most functional compiler implement algebraic type with
-lots of pointer and dispersed pieces of data across the RAM (depending of the
+representation of algebraic data types depending of the concrete algorithm
+implemented. Currently most functional compilers implement algebraic data type with
+lot of pointers and dispersed pieces of data across the RAM (depending on the
 garbage collector implementation). We try to create parametric implementations
 of compacted representation of these structures and to tune them automatically
 depending on the input algorithm.
@@ -44,35 +44,35 @@ caches utilisé ...
 
 \subsection{Objectives}
 
-Or objective is to show how from a simple input : a description of a algebraic
-types and a programming code using them.
+Our objective is to show how from a simple input : a description of an algebraic
+data type and a programming code using them.
 
-Currently our test code take algebraic type with a simple format :
+Currently our test code takes an algebraic data type with a simple format :
 
 \verb$ type tree = | Node tree tree | Leaf$
 
-And the code can be used in the following way : 
+And the code can be used in the following way:
 
 ...
 
-From that we first compile against a naive implementation of the algebraic type
-execute it. This version also log all construction/deconstruction operation by
+From that, we first compile against a naive implementation of the algebraic data type
+and execute it. This version also logs all construction/deconstruction operations by
 numbering all variables and write a file like :
 
 \verb$107 < (12,56,78)$
 
-We can then analyze this trace of execution and extract statistics from it (cf.
+We can then analyze this trace of execution and extract statistics from it (cf.\ 
 section \ref{logs}). From
 those statistics we try to deduce the most optimal way to encode it in memory by
-tuning the input value of some parametric structures (cf. section \ref{paramImplem})
+tuning the input value of some parametric structures (cf.\ section \ref{paramImplem})
 
 
 
 
 \section{Naive Implementation}
 
-The naive implementation of algebraic type consist in using different memory
-block for every node : data is dispersed in RAM and blocks have pointer to
+The naive implementation of algebraic data type consists in using different memory
+block for every node: data is dispersed in RAM and blocks have pointers to
 other blocks.
 
 
@@ -83,13 +83,13 @@ other blocks.
 As we can't (or its completely out of our reach) write code
 depending on the input, we have chosen to write ``parametric code'' : code that
 depends on some integer/real parameters and we just try to automatically tweak
-those parameters depending of the input code. 
+those parameters depending of the input code.
 
 \subsection{Block allocation}
 
-This methods is a simple idea to gather data close together. We regroup data in
+This method is a simple idea to gather data close together. We regroup data in
 blocks and blocks on other blocks. We define $N +1$ levels of blocks from 0 to
-$N$. The level 0 store elementary structure, level 0 block are just a block of
+$N$. The level $0$ stores elementary structure, level $0$ blocks are just blocks of
 data with no structure.
 
 For each other level $i$, we store block of size $i-1$, At each level we define
