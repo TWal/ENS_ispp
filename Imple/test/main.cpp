@@ -3,6 +3,9 @@
 #include <vector>
 #include <string>
 #include <functional>
+#include <array>
+#include <cstring>
+#include "Blocks.h"
 using namespace std;
 
 #include "tree.cpp"
@@ -37,6 +40,7 @@ ostream& show(ostream& out, tree_t* tr) {
 int main() {
     int input;
     vector<tree_t*> pile;
+    init_blocks();
 
     while(cin >> input) {
         if(input != -42) {
