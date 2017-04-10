@@ -1,6 +1,7 @@
 
 #include "BlockCodegen.h"
 #include <iostream>
+#include <sstream>
 using namespace std;
 
 size_t BlockCodegen::real_size(size_t id) {
@@ -17,9 +18,13 @@ void BlockCodegen::find_block(const std::string& name) {
             << ">::allocate(blks[" << i << "], blks[" << i-1 << "]);" << endl;
         _out << string(4*(i+1), ' ') << "if(!blk" << i << ") {" << endl;
     }
+    /* Allocate main block aligned to its size */
     _out << string(4*(_blocks.size() + 1), ' ') << "blks[" << _blocks.size() - 1
-        << "] = new char[" << real_size(_blocks.size() - 1) << "];" << endl;
+        << "] = (char*)aligned_alloc(" << real_size(_blocks.size() - 1) << ", "
+        << real_size(_blocks.size() - 1)  << ");" << endl;
     _out << string(4*(_blocks.size() + 1), ' ') << "assert(!!blks[" << _blocks.size() - 1 << "]);" << endl;
+    _out << string(4*(_blocks.size() + 1), ' ') << "assert((intptr_t)blks[" << _blocks.size() - 1 << "] % "
+        << real_size(_blocks.size() - 1) << " == 0);" << endl;
     for(size_t i = _blocks.size() - 1; i > 0; --i) {
         _out << string(4*(i+2), ' ') << "blk" << i << " = block<"
             << real_size(i-1) << "," << _blocks[i].size << ","
@@ -29,12 +34,19 @@ void BlockCodegen::find_block(const std::string& name) {
         _out << string(4*(i+2), ' ') << "assert(!!blk" << i << ");" << endl;
         _out << string(4*(i+1), ' ') << "}" << endl;
         _out << string(4*(i+1), ' ') << "blks[" << i - 1 << "] = blk" << i << ";" << endl;
+        _out << string(4*(i+1), ' ') << "assert((intptr_t)blks[" << i - 1 << "] % " << real_size(i-1) << " == 0);" << endl;
     }
     _out << "    }" << endl;
     _out << "    used = *blks[0];" << endl;
     _out << "    *(char*)blks[0] = used + sizeof(" << name << "_t);" << endl;
     _out << "    " << name << "_t* ptr = (" << name << "_t*)(blks[0] + " << _blocks[0].size
         << " - used - sizeof(" << name << "_t));" << endl;
+}
+void BlockCodegen::fill_blocks(const std::string& ptr) {
+    for(size_t i = 0; i < _blocks.size(); ++i) {
+        _out << "    blks[" << i << "] = (char*)(" << ptr << ") - "
+            << "((intptr_t)" << ptr << " % " << real_size(i) << ");" << endl;
+    }
 }
 
 void BlockCodegen::define(const std::vector<Type*>& ts) {
@@ -49,8 +61,8 @@ void BlockCodegen::codegen(const std::vector<Type*>& ts) {
     _out << "array<__block," << _blocks.size() << "> first_block;" << endl;
 
     _out << "void init_blocks() {" << endl;
-    _out << "    first_block[" << _blocks.size() - 1 << "] = new char["
-        << real_size(_blocks.size() - 1) << "];" << endl;
+    _out << "    first_block[" << _blocks.size() - 1 << "] = (char*)aligned_alloc("
+        << real_size(_blocks.size() - 1) << ", " << real_size(_blocks.size() - 1) << ");" << endl;
     for(int i = _blocks.size() - 2; i >= 0; --i) {
         _out << "    first_block[" << i << "] = block<"
             << real_size(i) << "," << _blocks[i+1].size << ","
@@ -77,7 +89,6 @@ void BlockCodegen::declare_prod(const std::string& name, const std::vector<Type*
     _out << endl;
 
     _out << "public:" << endl;
-    _out << "    array<__block," << _blocks.size() << "> blks;" << endl;
     _out << "    static " << ref_prod(name, types) << " build(";
     _out << types[0]->ref(this) << " m0";
     for(size_t i = 1; i < types.size(); ++i) {
@@ -108,15 +119,19 @@ void BlockCodegen::gen_prod(const std::string& name, const std::vector<Type*>& t
             break;
         }
     }
-    _out << "    array<__block," << _blocks.size() << ">& blks = ";
-    if(non_native == (size_t)-1) _out << "first_block"; else _out << "m" << non_native << "->blks";
-    _out << ";" << endl;
+    _out << "    array<__block," << _blocks.size() << "> blks;" << endl;
+    if(non_native == (size_t)-1) {
+        _out << "blks = first_block;" << endl;
+    } else {
+        ostringstream oss;
+        oss << "m" << non_native;
+        fill_blocks(oss.str());
+    }
 
     find_block(name);
     for(size_t i = 0; i < types.size(); ++i) {
         _out << "    ptr->m" << i << " = m" << i << ";" << endl;
     }
-    _out << "    ptr->blks = blks;" << endl;
     _out << "    return ptr;" << endl;
     _out << "}" << endl;
     _out << endl;
@@ -148,7 +163,6 @@ void BlockCodegen::declare_sum(const std::string& name, const std::vector<Type*>
     _out << endl;
 
     _out << "public:" << endl;
-    _out << "    array<__block," << _blocks.size() << "> blks;" << endl;
     for(size_t i = 0; i < types.size(); ++i) {
         _out << "    static " << ref_sum(name, types) << " build_" << types[i]->base_name()
             << "(" << types[i]->ref(this) << " b);" << endl;
@@ -172,14 +186,16 @@ void BlockCodegen::gen_sum(const std::string& name, const std::vector<Type*>& ty
         _out << ref_sum(name, types) << " " << name << "_t::build_" << types[i]->base_name()
             << "(" << types[i]->ref(this) << " b) {" << endl;
         int non_native = types[i]->is_native(_defined) ? 0 : 1;
-        _out << "    array<__block, " << _blocks.size() << ">& blks = ";
-        if(!non_native) _out << "first_block"; else _out << "b->blks";
-        _out << ";" << endl;
+        _out << "    array<__block," << _blocks.size() << "> blks;" << endl;
+        if(non_native) {
+            _out << "blks = first_block;" << endl;
+        } else {
+            fill_blocks("b");
+        }
         find_block(name);
 
         _out << "    ptr->type = " << i << ";" << endl;
         _out << "    ptr->m" << i << " = b;" << endl;
-        _out << "    ptr->blks = blks;" << endl;
         _out << "    return ptr;" << endl;
         _out << "}" << endl;
         _out << endl;

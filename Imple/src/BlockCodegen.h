@@ -19,6 +19,7 @@ protected:
     std::vector<Block> _blocks;
     size_t real_size(size_t id);
     void find_block(const std::string& name);
+    void fill_blocks(const std::string& ptr);
 
 public:
     explicit BlockCodegen(std::ostream& out,

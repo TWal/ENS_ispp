@@ -13,6 +13,8 @@ template < size_t SizeSub
 struct block {
     /* Allocate a block next to the one in parameters
      * Returns NULL if FillingMax is reached
+     * If block is aligned to NbSubs * SizeSub, the block allocated
+     * will be alligned to SizeSub.
      */
     static char* allocate(char* block, char* next_to);
     /* Free a sub block.
