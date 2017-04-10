@@ -12,6 +12,7 @@ void BlockCodegen::find_block(const std::string& name) {
     _out << "    char used = *blks[0];" << endl;
     _out << "    if(used + sizeof(" << name << "_t) > " << _blocks[0].size - 1 << ") {" << endl;
     for(size_t i = 1; i < _blocks.size(); ++i) {
+        _out << "    cout << \"nw : \" << " << i - 1 << " << endl;" << endl;
         _out << string(4*(i+1), ' ') << "__block blk" << i << " = block<"
             << real_size(i-1) << "," << _blocks[i].size << ","
             << _blocks[i].filling_max << "," << _blocks[i].filling_min
@@ -132,6 +133,7 @@ void BlockCodegen::gen_prod(const std::string& name, const std::vector<Type*>& t
     for(size_t i = 0; i < types.size(); ++i) {
         _out << "    ptr->m" << i << " = m" << i << ";" << endl;
     }
+    _out << "    first_block = blks;" << endl;
     _out << "    return ptr;" << endl;
     _out << "}" << endl;
     _out << endl;
@@ -196,6 +198,7 @@ void BlockCodegen::gen_sum(const std::string& name, const std::vector<Type*>& ty
 
         _out << "    ptr->type = " << i << ";" << endl;
         _out << "    ptr->m" << i << " = b;" << endl;
+        _out << "    first_block = blks;" << endl;
         _out << "    return ptr;" << endl;
         _out << "}" << endl;
         _out << endl;
