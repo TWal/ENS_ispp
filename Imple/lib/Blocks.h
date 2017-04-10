@@ -33,5 +33,7 @@ struct block {
     static std::map<char*,char*> merge(char* dest, char* block);
 };
 
+#include "Blocks.cpp"
+
 #endif//DEF_BLOCKS
 
