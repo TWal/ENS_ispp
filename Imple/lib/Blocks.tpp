@@ -84,11 +84,11 @@ T* block<T,NbSubs,FillingMax,FillingMin>::allocate(T* next_toT) {
     size_t hd = SizeSub;
     size_t offset = std::distance(data + hd, next_to) / SizeSub;
 
-    /* TODO use bsr assembly instruction */
-    /* asm("mov %%eax, %0, ... %9" : "=r"(var) : "r"(var) : ) */
-    int noff = offset - 1;
-    while(noff >= 0 && header_offset(data,noff) == 1) --noff;
-    if(noff < 0) return NULL;
+    uint64_t noff = offset - 1;
+    /* Assumes little-endianness */
+    uint64_t bitmap = (*(uint32_t*)data) & ((1 << noff) - 1);
+    if(bitmap == 0) return NULL;
+    asm("bsr %1,%0;" : "=r" (noff) : "r" (bitmap));
 
     header_set(data, noff);
     char* addr = data + hd + noff * SizeSub;

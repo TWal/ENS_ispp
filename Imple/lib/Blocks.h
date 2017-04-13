@@ -11,6 +11,7 @@
  * - a constructor without arguments
  * - a function create
  * - a function init
+ * Furthermore, assumes sizeof(T) >= 8 and NbSubs < 64
  */
 template < typename T
          , size_t NbSubs
@@ -46,12 +47,11 @@ struct block {
     /* Count the number of subblocks free.
      */
     inline size_t filling() const {
-        /* TODO use popcnt assembly instruction */
-        size_t cnt = 0;
-        for(size_t i = 0; i < NbSubs - 1; ++i) {
-            cnt += ((data[i/8] >> (i%8)) & 0x01) == 0;
-        }
-        return cnt;
+        /* Here endianness doesn't matter : we only count the bits set to 1 */
+        uint64_t bitmap = *(uint64_t*)data; 
+        uint64_t cnt;
+        asm("popcnt %1,%0;" : "=r" (bitmap) : "r" (cnt));
+        return NbSubs - 1 - cnt;
     }
 };
 
