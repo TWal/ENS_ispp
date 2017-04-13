@@ -1,7 +1,9 @@
 all:
 	@mkdir -p generated
-	@../Imple/adtOpti < LinkedList | sed "s/cerr.*//g" > generated/LinkedList.cpp
-	@g++ -std=c++14 -O2 mergesort.cpp -o mergesort
+	@cp ../Imple/lib/* generated
+	@../Imple/adtOpti < LinkedList | sed "s/cerr.*//g" | sed "s/cout.*//g" > generated/LinkedList.cpp
+	#@g++ -std=c++14 -O2 mergesort.cpp -o mergesort
+	@g++ -std=c++14 -g -pg mergesort.cpp -o mergesort
 	@ocamlopt mergesort.ml -o ocamlmergesort -ccopt -O2
 	@ocamlopt mergesortlist.ml -o ocamlmergesortlist -ccopt -O2
 	@ghc -O2 mergesort.hs -o haskellmergesort
