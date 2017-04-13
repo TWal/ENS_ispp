@@ -50,7 +50,7 @@ struct block {
         /* Here endianness doesn't matter : we only count the bits set to 1 */
         uint64_t bitmap = *(uint64_t*)data; 
         uint64_t cnt;
-        asm("popcnt %1,%0;" : "=r" (bitmap) : "r" (cnt));
+        asm("popcnt %1,%0;" : "=r" (cnt) : "r" (bitmap));
         return NbSubs - 1 - cnt;
     }
 };

@@ -30,10 +30,10 @@ block<T,NbSubs,FillingMax,FillingMin>::block() {
      */
     size_t off1 = (NbSubs - 1) / 8;
     size_t rst  = (NbSubs - 1) % 8;
-    size_t off2 = (NbSubs - 1) / 8 + (rst != 0);
-    std::memset(this, 0xff, off1);
-    *(char*)(this + off1) = 0xff - ((1 << rst) - 1);
-    std::memset(this + off2, 0, SizeSub - off2);
+    size_t off2 = off1 + (rst != 0);
+    std::memset(data, 0xff, off1);
+    *(data + off1) = 0xff - ((1 << rst) - 1);
+    std::memset(data + off2, 0, SizeSub - off2);
 }
 
 template < typename T
@@ -51,6 +51,7 @@ char* block<T,NbSubs,FillingMax,FillingMin>::malloc(char* next_toT, size_t size)
         sub = allocate(sub);
         if(!sub) return NULL;
         char* ini = sub->init();
+        assert(ini);
         nw = sub->malloc(ini, size);
         assert(nw);
     }
@@ -78,11 +79,12 @@ template < typename T
 T* block<T,NbSubs,FillingMax,FillingMin>::allocate(T* next_toT) {
     char* next_to = (char*)next_toT;
     if(filling() >= FillingMax) return NULL;
-    assert(next_to - data > 0);
+    assert(next_to - data >= SizeSub);
     assert((size_t)(next_to - data) <= Size);
 
     size_t hd = SizeSub;
     size_t offset = std::distance(data + hd, next_to) / SizeSub;
+    if(offset == 0) return NULL;
 
     uint64_t noff = offset - 1;
     /* Assumes little-endianness */
@@ -95,6 +97,7 @@ T* block<T,NbSubs,FillingMax,FillingMin>::allocate(T* next_toT) {
     new(addr) T;
 
     assert((intptr_t)addr % SizeSub == 0);
+    assert((intptr_t)addr % Size != 0);
     return (T*)addr;
 }
 
