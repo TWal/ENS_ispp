@@ -4,73 +4,32 @@
 #include <sstream>
 using namespace std;
 
-size_t BlockCodegen::real_size(size_t id) {
-    if(id == 0) return _blocks[0].size;
-    else        return _blocks[id].size * real_size(id - 1);
-}
-void BlockCodegen::find_block(const std::string& name) {
-    _out << "    char used = *blks[0];" << endl;
-    _out << "    if(used + sizeof(" << name << "_t) > " << _blocks[0].size - 1 << ") {" << endl;
-    for(size_t i = 1; i < _blocks.size(); ++i) {
-        _out << "    cout << \"nw : \" << " << i - 1 << " << endl;" << endl;
-        _out << string(4*(i+1), ' ') << "__block blk" << i << " = block<"
-            << real_size(i-1) << "," << _blocks[i].size << ","
-            << _blocks[i].filling_max << "," << _blocks[i].filling_min
-            << ">::allocate(blks[" << i << "], blks[" << i-1 << "]);" << endl;
-        _out << string(4*(i+1), ' ') << "if(!blk" << i << ") {" << endl;
-    }
-    /* Allocate main block aligned to its size */
-    _out << string(4*(_blocks.size() + 1), ' ') << "blks[" << _blocks.size() - 1
-        << "] = (char*)aligned_alloc(" << real_size(_blocks.size() - 1) << ", "
-        << real_size(_blocks.size() - 1)  << ");" << endl;
-    _out << string(4*(_blocks.size() + 1), ' ') << "assert(!!blks[" << _blocks.size() - 1 << "]);" << endl;
-    _out << string(4*(_blocks.size() + 1), ' ') << "assert((intptr_t)blks[" << _blocks.size() - 1 << "] % "
-        << real_size(_blocks.size() - 1) << " == 0);" << endl;
-    for(size_t i = _blocks.size() - 1; i > 0; --i) {
-        _out << string(4*(i+2), ' ') << "blk" << i << " = block<"
-            << real_size(i-1) << "," << _blocks[i].size << ","
-            << _blocks[i].filling_max << "," << _blocks[i].filling_min
-            << ">::allocate(blks[" << i << "], blks[" << i << "] + " << real_size(i) << ");" << endl;
-        _out << string(4*(i+2), ' ') << "/* Cannot fails because the upper block is new, thus empty */" << endl;
-        _out << string(4*(i+2), ' ') << "assert(!!blk" << i << ");" << endl;
-        _out << string(4*(i+1), ' ') << "}" << endl;
-        _out << string(4*(i+1), ' ') << "blks[" << i - 1 << "] = blk" << i << ";" << endl;
-        _out << string(4*(i+1), ' ') << "assert((intptr_t)blks[" << i - 1 << "] % " << real_size(i-1) << " == 0);" << endl;
-    }
-    _out << "    }" << endl;
-    _out << "    used = *blks[0];" << endl;
-    _out << "    *(char*)blks[0] = used + sizeof(" << name << "_t);" << endl;
-    _out << "    " << name << "_t* ptr = (" << name << "_t*)(blks[0] + " << _blocks[0].size
-        << " - used - sizeof(" << name << "_t));" << endl;
-}
-void BlockCodegen::fill_blocks(const std::string& ptr) {
-    for(size_t i = 0; i < _blocks.size(); ++i) {
-        _out << "    blks[" << i << "] = (char*)(" << ptr << ") - "
-            << "((intptr_t)" << ptr << " % " << real_size(i) << ");" << endl;
-    }
-}
-
 void BlockCodegen::define(const std::vector<Type*>& ts) {
-    _out << "typedef char* __block;" << endl;
-    _out << "extern array<__block," << _blocks.size() << "> first_block;" << endl;
+    _out << "#include \"Blocks.h\"" << endl;
+    _out << "typedef charblock<" << _blocks[0].size << "> block0;" << endl;
+    for(size_t i = 1; i < _blocks.size(); ++i) {
+        _out << "typedef block<block" << i - 1 << ", "
+            << _blocks[i].size << ", "
+            << _blocks[i].filling_max << ", "
+            << _blocks[i].filling_min
+            << "> block" << i << ";" << endl;
+    }
+    _out << "extern block0* first_block;" << endl;
     for(auto t: ts) t->define(this);
 }
 void BlockCodegen::declare(const std::vector<Type*>& ts) {
     for(auto t: ts) t->declare(this);
 }
 void BlockCodegen::codegen(const std::vector<Type*>& ts) {
-    _out << "array<__block," << _blocks.size() << "> first_block;" << endl;
+    _out << "block0* first_block;" << endl;
 
     _out << "void init_blocks() {" << endl;
-    _out << "    first_block[" << _blocks.size() - 1 << "] = (char*)aligned_alloc("
-        << real_size(_blocks.size() - 1) << ", " << real_size(_blocks.size() - 1) << ");" << endl;
-    for(int i = _blocks.size() - 2; i >= 0; --i) {
-        _out << "    first_block[" << i << "] = block<"
-            << real_size(i) << "," << _blocks[i+1].size << ","
-        << _blocks[i+1].filling_max << "," << _blocks[i+1].filling_min
-        << ">::allocate(first_block[" << i+1 << "],first_block[" << i+1
-        << "] + " << real_size(i+1) - 1 << ");" << endl;
-    }
+    /* Alloc a block of size zero near nothing */
+    _out << "    first_block = (block0*)block_init<block"
+        << _blocks.size() - 1 << ">();" << endl;
+    /* It will point after the end of the allocated block, which is what we want
+     * since we will use it as the initial next_to.
+     */
     _out << "}" << endl;
     _out << endl;
 
@@ -120,20 +79,21 @@ void BlockCodegen::gen_prod(const std::string& name, const std::vector<Type*>& t
             break;
         }
     }
-    _out << "    array<__block," << _blocks.size() << "> blks;" << endl;
+    _out << "    block0* blk = ";
     if(non_native == (size_t)-1) {
-        _out << "blks = first_block;" << endl;
+        _out << "first_block;" << endl;
     } else {
-        ostringstream oss;
-        oss << "m" << non_native;
-        fill_blocks(oss.str());
+        _out << "(block0*)m" << non_native << ";" << endl;
     }
 
-    find_block(name);
+    _out << "    " << ref_prod(name, types) << " ptr = "
+        << "(" << ref_prod(name, types) << ")"
+        << "block_malloc<block" << _blocks.size() - 1 << ">"
+        << "((char*)blk, sizeof(" << name << "_t));" << endl;
     for(size_t i = 0; i < types.size(); ++i) {
         _out << "    ptr->m" << i << " = m" << i << ";" << endl;
     }
-    _out << "    first_block = blks;" << endl;
+    _out << "    first_block = (block0*)ptr;" << endl;
     _out << "    return ptr;" << endl;
     _out << "}" << endl;
     _out << endl;
@@ -188,17 +148,17 @@ void BlockCodegen::gen_sum(const std::string& name, const std::vector<Type*>& ty
         _out << ref_sum(name, types) << " " << name << "_t::build_" << types[i]->base_name()
             << "(" << types[i]->ref(this) << " b) {" << endl;
         int non_native = types[i]->is_native(_defined) ? 0 : 1;
-        _out << "    array<__block," << _blocks.size() << "> blks;" << endl;
-        if(non_native) {
-            _out << "blks = first_block;" << endl;
-        } else {
-            fill_blocks("b");
-        }
-        find_block(name);
+        _out << "    block0* blk = "
+            << (non_native ? "first_block" : "b")
+            << ";" << endl;
 
+        _out << "    " << ref_sum(name, types) << " ptr = "
+            << "(" << ref_sum(name, types) << ")"
+            << "block_malloc<block" << _blocks.size() - 1 << ">"
+            << "((char*)blk, sizeof(" << name << "_t));" << endl;
         _out << "    ptr->type = " << i << ";" << endl;
         _out << "    ptr->m" << i << " = b;" << endl;
-        _out << "    first_block = blks;" << endl;
+        _out << "    first_block = (block0*)ptr;" << endl;
         _out << "    return ptr;" << endl;
         _out << "}" << endl;
         _out << endl;

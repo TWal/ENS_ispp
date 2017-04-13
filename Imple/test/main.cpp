@@ -1,11 +1,7 @@
 
 #include <iostream>
 #include <vector>
-#include <string>
 #include <functional>
-#include <array>
-#include <cstring>
-#include "Blocks.h"
 using namespace std;
 
 #include "tree.cpp"
