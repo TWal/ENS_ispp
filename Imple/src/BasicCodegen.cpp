@@ -135,8 +135,10 @@ void BasicCodegen::declare_prod(const std::string& name, const std::vector<Type*
         _out << "," << types[i]->ref(this) << " m" << i;
     }
     _out << ");" << endl;
-    _out << "template <typename T, typename F>" << endl;
-    _out << "static T match(" << ref_prod(name,types) << " v, const F& f);" << endl;
+    for(size_t i = 0; i < types.size(); ++i) {
+        _out << "    static " << types[i]->ref(this) << " "
+            << "get" << i << "(" << ref_prod(name, types) << " v);" << endl;
+    }
     _out << "    unsigned long long get_id() const;" << endl;
     _out << "};" << endl;
     for(auto t : types) t->declare(this);
@@ -175,25 +177,19 @@ void BasicCodegen::gen_prod(const std::string& name, const std::vector<Type*>& t
     _out << endl;
 
     /* Matching */
-    _out << "template <typename T, typename F>" << endl;
-    _out << "T " << name << "_t::match(" << ref_prod(name,types) << " v, const F& f) {" << endl;
-    /* Logging */
-    _out << "    cerr << \"" << name << " (\" << ";
-    if(!types[0]->is_native(_defined)) _out << "v->m0->get_id()";
-    else _out << "\"[\" << sizeof(" << types[0]->base_name() << ") << \"]\"";
-    for(size_t i = 1; i < types.size();++i) {
-        _out << " << \", \" << ";
-        if(!types[i]->is_native(_defined)) _out << "v->m" << i << "->get_id()";
-        else _out << "\"[\" << sizeof(" << types[i]->base_name() << ") << \"]\"";
-    }
-    _out << " << \") < \" << v->get_id() << endl;" << endl;
-    /* End of logging */
-    _out << "    return f(";
     for(size_t i = 0; i < types.size(); ++i) {
-        _out << (i == 0 ? "" : ", ") << "v->m" << i;
+        _out << types[i]->ref(this) << " "
+            << name << "_t::get" << i << "("
+            << ref_prod(name, types) << " v) {" << endl;
+        /* Logging */
+        _out << "    cerr << \"" << name << " (\" << " << i << " << \":\" << ";
+        if(!types[i]->is_native(_defined)) _out << "v->m0->get_id()";
+        else _out << "\"[\" << sizeof(" << types[i]->base_name() << ") << \"]\"";
+        _out << " << \") < \" << v->get_id() << endl;" << endl;
+        /* End of logging */
+        _out << "    return v->m" << i << ";";
+        _out << "}" << endl;
     }
-    _out << ");" << endl;
-    _out << "}" << endl;
 
     /* Getting id */
     _out << endl;
