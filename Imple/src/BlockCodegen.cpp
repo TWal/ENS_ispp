@@ -96,9 +96,11 @@ void BlockCodegen::declare_prod(const std::string& name, const std::vector<Type*
     }
     _out << ");" << endl;
 
-    /* The function should take as many arguments as they are subtypes. */
-    _out << "    template <typename T, typename F>" << endl;
-    _out << "    static T match(" << ref_prod(name,types) << " v, const F& f);" << endl;
+    /* Generate a getter per subtype. */
+    for(size_t i = 0; i < types.size(); ++i) {
+        _out << "    static " << types[i]->ref(this) << " get" << i << "("
+            << ref_prod(name, types) << " v);" << endl;
+    }
     _out << "};" << endl;
 
     for(auto t : types) t->declare(this);
@@ -170,16 +172,13 @@ void BlockCodegen::gen_prod(const std::string& name, const std::vector<Type*>& t
 
 
 
-    /* The match function simply applies F to every subtype at once.
-     * TODO: change for getters.
-     */
-    _out << "template <typename T, typename F>" << endl;
-    _out << "T " << name << "_t::match(" << ref_prod(name,types) << " v, const F& f) {" << endl;
-    _out << "    return f(v->m0";
-    for(size_t i = 1; i < types.size(); ++i) _out << ", v->m" << i;
-    _out << ");" << endl;
-    _out << "}" << endl;
-    _out << endl;
+    /* As of now, a getter simply returns the value. */
+    for(size_t i = 0; i < types.size(); ++i) {
+        _out << types[i]->ref(this) << " " << name << "_t::get" << i << "("
+            << ref_prod(name, types) << " v) {" << endl;
+        _out << "    return v->m" << i << ";" << endl;
+        _out << "}" << endl;
+    }
 }
 
 

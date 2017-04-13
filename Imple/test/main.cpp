@@ -11,18 +11,16 @@ ostream& show(ostream& out, node_t* nd);
 ostream& show(ostream& out, tree_t* tr);
 
 ostream& show(ostream& out, leaf_t* lf) {
-    leaf_t::match<void>(lf, [&] (int i) { out << i; });
+    out << leaf_t::get0(lf);
     return out;
 }
 
 ostream& show(ostream& out, node_t* nd) {
-    node_t::match<void>(nd, [&] (tree_t* t1, tree_t *t2) {
-            out << "(";
-            show(out,t1);
-            out << ") (";
-            show(out,t2);
-            out << ")";
-            });
+    out << "(";
+    show(out,node_t::get0(nd));
+    out << ") (";
+    show(out,node_t::get1(nd));
+    out << ")";
     return out;
 }
 
