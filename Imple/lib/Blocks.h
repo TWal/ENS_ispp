@@ -53,6 +53,8 @@ struct block {
         asm("popcnt %1,%0;" : "=r" (cnt) : "r" (bitmap));
         return NbSubs - 1 - cnt;
     }
+    /* Count the number of level-0 blocks */
+    size_t level_0() const;
 };
 
 /* The basic block type. */
@@ -62,6 +64,7 @@ struct charblock {
     charblock();
     char* malloc(char*, size_t size);
     char* init();
+    size_t level_0() const;
 };
 
 /* The global malloc */

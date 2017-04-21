@@ -6,17 +6,14 @@
 
 #define DEBUG cerr << __LINE__ << endl
 
-inline int header_offset(char* block, int off) {
-    block += off / 8;
-    return 1 - ((*block >> (off % 8)) & 0x01);
+inline int header_offset(uint64_t* block, int off) {
+    return 1 - ((*block >> off) & 0x01);
 }
-inline void header_unset(char* block, int off) {
-    block += off / 8;
-    *block |= 1 << (off % 8);
+inline void header_unset(uint64_t* block, int off) {
+    *block |= 1ll << off;
 }
-inline void header_set(char* block, int off) {
-    block += off / 8;
-    *block &= ~(1 << (off % 8));
+inline void header_set(uint64_t* block, int off) {
+    *block &= ~(1ll << off);
 }
     
 template < typename T
@@ -28,12 +25,8 @@ block<T,NbSubs,FillingMax,FillingMin>::block() {
     /* Set the header to 1 for all empty blocks, and 0 for blocks outside of
      * range
      */
-    size_t off1 = (NbSubs - 1) / 8;
-    size_t rst  = (NbSubs - 1) % 8;
-    size_t off2 = off1 + (rst != 0);
-    std::memset(data, 0xff, off1);
-    *(data + off1) = 0xff - ((1 << rst) - 1);
-    std::memset(data + off2, 0, SizeSub - off2);
+    uint64_t *bitmap = (uint64_t*)data;
+    *bitmap = (uint64_t)(1ll << (NbSubs - 1)) - 1;
 }
 
 template < typename T
@@ -86,13 +79,13 @@ T* block<T,NbSubs,FillingMax,FillingMin>::allocate(T* next_toT) {
     size_t offset = std::distance(data + hd, next_to) / SizeSub;
     if(offset == 0) return NULL;
 
-    uint64_t noff = offset - 1;
-    /* Assumes little-endianness */
-    uint64_t bitmap = (*(uint32_t*)data) & ((1 << noff) - 1);
+    uint64_t noff = offset;
+    uint64_t bitmap = (*(uint64_t*)data) & ((1ll << noff) - 1ll);
     if(bitmap == 0) return NULL;
+    /* TODO fill from the end if necessary */
     asm("bsr %1,%0;" : "=r" (noff) : "r" (bitmap));
 
-    header_set(data, noff);
+    header_set((uint64_t*)data, noff);
     char* addr = data + hd + noff * SizeSub;
     new(addr) T;
 
@@ -110,9 +103,25 @@ template < typename T
 bool block<T,NbSubs,FillingMax,FillingMin>::free(T* sub) {
     size_t hd = SizeSub;
     size_t offset = std::distance(data + hd, (char*)sub) / SizeSub;
-    assert(header_offset(data,offset) == 1);
-    header_unset(data,offset);
+    assert(header_offset((uint64_t*)data,offset) == 1);
+    header_unset((uint64_t*)data,offset);
     return filling() <= FillingMin;
+}
+
+template < typename T
+         , size_t NbSubs
+         , size_t FillingMax
+         , size_t FillingMin
+         >
+size_t block<T,NbSubs,FillingMax,FillingMin>::level_0() const {
+    size_t lvl0 = 0;
+    for(size_t off = 0; off < NbSubs - 1; ++off) {
+        if(header_offset((uint64_t*)data, off)) {
+            T* sub = (T*)(data + (off + 1) * SizeSub);
+            lvl0 += sub->level_0();
+        }
+    }
+    return lvl0;
 }
 
 template < size_t Size >
@@ -131,6 +140,11 @@ char* charblock<Size>::malloc(char*, size_t size) {
 template < size_t Size >
 char* charblock<Size>::init() {
     return (char*)this;
+}
+
+template < size_t Size >
+size_t charblock<Size>::level_0() const {
+    return data[0];
 }
 
 template < typename T >
@@ -164,6 +178,7 @@ char* block_malloc(char* next_to, size_t size) {
          */
         block = (T*)aligned_alloc(SizeSub, SizeSub);
         assert(block);
+        assert((intptr_t)block % SizeSub == 0);
         new(block) T;
         char* ini = block->init();
         assert(ini);
