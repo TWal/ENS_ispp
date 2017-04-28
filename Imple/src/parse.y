@@ -15,6 +15,8 @@ class Scanner;
 
 #include"parse.hpp"
 
+using namespace std;
+
 
 
 //using namespace std;
@@ -54,7 +56,7 @@ void yy::parser::error(const yy::location& loc,const std::string& st)
 %token  <std::string>   IDENT
 
 %parse-param {Scanner& scan}
-%parse-param {std::pair<std::string,Type*>& res}
+%parse-param {std::vector<FullType>& res}
 
 %code{
     // declare the parser fonction to call :
@@ -73,13 +75,19 @@ void yy::parser::error(const yy::location& loc,const std::string& st)
     @$.initialize (scan.getName());
 };
 
-%type   <Type*> type
+/*                      %type   <Type*> type
 %type   <Type*> prodTypeElem
 %type   <std::vector<Type*> > prodType
 %type   <std::vector<Type*> > prodTypeSum
 %type   <std::vector<Type*> > sumType
 %type   <Type*> sumTypeElem
-%type   <std::pair<std::string,Type*>> typeDeclaration
+%type   <std::pair<std::string,Type*>> typeDeclaration*/
+
+                      %type   <std::vector<FullType>> typeDecls
+%type   <FullType> typeDecl
+%type   <FullType> fulltype
+%type   <std::pair<std::string,std::vector<LeafType>>> constructor
+%type   <std::vector<LeafType>> list
 
 //                      %precedence PRODCOMP
 //                      %precedence BAR
@@ -91,12 +99,57 @@ void yy::parser::error(const yy::location& loc,const std::string& st)
 %%
 
 program:
-        typeDeclaration {
-            res = $1;
+        typeDecls {
+            res= $1;
         }
     ;
 
-typeDeclaration:
+typeDecls:
+        typeDecl {
+            $$ = std::vector<FullType>(1,$1);
+        }
+    |
+        typeDecls typeDecl {
+            $$ = $1; $$.push_back($2);
+        }
+    ;
+
+typeDecl:
+        TYP IDENT EQUAL fulltype SEMICOLON {
+            $4.name = $2; $$ = $4;
+        }
+
+    ;
+
+fulltype:
+        constructor {
+            $$.content.insert($1);
+        }
+    |
+        fulltype constructor {
+            $$ = $1; $$.content.insert($2);
+        }
+    ;
+
+constructor:
+        BAR IDENT list {
+            $$ = make_pair($2,$3);
+        }
+    ;
+
+list:
+        {
+            $$ = std::vector<LeafType>();
+        }
+    |
+        list IDENT
+        {
+            $1.push_back(LeafType($2)); $$ = $1;
+        }
+    ;
+
+
+/*typeDeclaration:
         TYP IDENT EQUAL type SEMICOLON
         {$4->base_name($2); $$ = make_pair($2,$4);}
     ;
@@ -138,7 +191,7 @@ sumType:
 sumTypeElem:
         BAR IDENT prodTypeSum {$$ = new ProdType($3); $$->base_name($2);}
     ;
-
+*/
 %%
 
 

@@ -90,7 +90,7 @@ other blocks.
 \section{Parametric Implementation}
 \label{paramImplem}
 
-As we can't (or its completely out of our reach) write code
+As we can't (or it's completely out of our reach) write code
 depending on the input, we have chosen to write ``parametric code'' : code that
 depends on some integer/real parameters and we just try to automatically tweak
 those parameters depending of the input code.
@@ -106,7 +106,7 @@ For each other level $i$, we store block of size $i-1$, At each level we define
 $\alpha_i$ the minimum ratio of $i-1$ blocks.
 
 
-\paragraph{TODO :} Fusion and split algorithm, other meta-data description (link
+\paragraph{TODO :} Fusion and split algorithms, other meta-data description (link
 with other blocks)
 
 
@@ -114,7 +114,16 @@ with other blocks)
 
 \subsection{Compact trees \& pointer elimination}
 
+The risk of cache miss is correlated to the closeness of data, if data is filled
+with pointer to piece of data in other place, we lose lots of space and increase
+the average distance between useful data.
 
+The goal of this part is to deduce, from type description, a compact
+representation of this type, for example for list we can compact data by storing
+$k$ consecutive element in the same blocks and pointer only between blocks.
+
+
+\paragraph{TODO :} describe detailed strategies for compact structure
 
 
 
@@ -127,12 +136,27 @@ with other blocks)
 
 \subsection{Statistics}
 
+\paragraph{Current Ideas :}
+\begin{itemize}
+\item Ratio Construction/deconstruction (global and by variable)
+\item Order of search we deconstruction product types
+\item Number of member of each constructor in sum types.
+\end{itemize}
+
 \section{Experimental Results}
+
+\paragraph{TODO :} badass graph here
+
+\paragraph{TODO :} Explain the way have evaluates the performance (cachegrind, etc.)
 
 
 
 \section{Conclusion}
 
+
+\begin{center}
+  The END
+\end{center}
 
 
 

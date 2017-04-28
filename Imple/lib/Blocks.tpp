@@ -15,7 +15,7 @@ inline void header_unset(uint64_t* block, int off) {
 inline void header_set(uint64_t* block, int off) {
     *block &= ~(1ll << off);
 }
-    
+
 template < typename T
          , size_t NbSubs
          , size_t FillingMax
@@ -137,7 +137,7 @@ char* charblock<Size>::malloc(char*, size_t size) {
     data[0] += size;
     return data + Size - data[0];
 }
-    
+
 template < size_t Size >
 char* charblock<Size>::init() {
     return data;

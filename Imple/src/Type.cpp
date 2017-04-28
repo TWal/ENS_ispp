@@ -3,111 +3,88 @@
 
 using namespace std;
 
-ostream& operator << (ostream&out,const Type& type){
-    return type.print(out);
-}
-
-size_t SumType::getSize(){
-    size_t res = 0;
-    for(auto p : _types){
-        res = max (res,p->getSize()+1);
-    }
-    return res;
-}
-
-size_t ProdType::getSize(){
-    size_t res = 0;
-    for(auto p : _types){
-        res += p->getSize()+1;
-    }
-    return res;
-}
-
-void SumType::base_name(const std::string& nm) {
-    _name = nm;
-}
-void ProdType::base_name(const std::string& nm) {
-    _name = nm;
-}
-void BasicType::base_name(const std::string&) {
-    /* Do nothing : base name is already set by construction */
-}
-string SumType::base_name() const {
-    return _name;
-}
-string ProdType::base_name() const {
-    return _name;
-}
-string BasicType::base_name() const {
-    return _ref;
-}
-
-
-std::ostream& SumType::print(std::ostream& out) const {
-    out << _name << " (";
-    for(auto p : _types){
-        out << "| " << *p <<" ";
-    }
-    out << ")";
-    return out;
-}
-std::ostream& ProdType::print(std::ostream& out) const {
-    out << _name << " ";
-    for(auto p : _types){
-        out << *p <<" ";
+std::ostream& operator << (std::ostream& out,const FullType& type){
+    out << "type " << type.name << " = ";
+    for(auto c : type.content){
+        out << " |" << c.first;
+        for(auto l : c.second){
+            out <<" "<< l.name;
+            if(l.pointedType){
+                out << "%";
+            }
+        }
     }
     return out;
 }
-std::ostream& BasicType::print(std::ostream& out) const {
-    return out << _ref;
+
+void fillLink(std::vector<FullType>& fts){
+    std::map<std::string,int> n2ind;
+    for(size_t i = 0 ; i < fts.size(); ++i){
+        n2ind[fts[i].name] = i;
+    }
+    for(FullType& ft : fts){
+        for(pair<const string,std::vector<LeafType>>& p : ft.content){
+            for(LeafType& lt : p.second){
+                if (n2ind.count(lt.name)){
+                    lt.pointedType = &fts[n2ind[lt.name]];
+                }
+                else lt.pointedType = nullptr;
+            }
+        }
+    }
 }
 
-void SumType::codegen(Codegen* gen) const{
-    gen->gen_sum(_name, _types);
+void Codegen::protoBuilder(std::ostream& out,std::string name,
+                  const std::pair<std::string,std::vector<LeafType>>& p){
+    out <<"\tstatic "<< name <<"* build_"<<p.first << "(";
+    for(size_t i = 0 ; i < p.second.size() ; ++i){
+        if(i) out << ",";
+        auto lt = p.second[i];
+        if(lt.pointedType) out << lt.name << "* m" << i;
+        else out <<lt.name << " m" << i;
+    }
+    out << ");"<<endl;
+
 }
-void ProdType::codegen(Codegen* gen) const {
-    gen->gen_prod(_name, _types);
-}
-void BasicType::codegen(Codegen* gen) const {
-    gen->gen_basic(_ref);
-}
-    
-void SumType::declare(Codegen* gen) const {
-    gen->declare_sum(_name, _types);
-}
-void ProdType::declare(Codegen* gen) const {
-    gen->declare_prod(_name, _types);
-}
-void BasicType::declare(Codegen* gen) const {
-    gen->declare_basic(_ref);
-}
-    
-void SumType::define(Codegen* gen) const {
-    gen->define_sum(_name, _types);
-}
-void ProdType::define(Codegen* gen) const {
-    gen->define_prod(_name, _types);
-}
-void BasicType::define(Codegen* gen) const {
-    gen->define_basic(_ref);
+void Codegen::protoMatch(std::ostream& out, const FullType& ft){
+    out << "\ttemplate<typename Ret";
+    for(auto p : ft.content){
+        out << ", typename F"<< p.first;
+    }
+    out << ">" <<endl;
+    out << "\tRet match(";
+    bool first = true;
+    for(auto p : ft.content){
+        if(first) first = false;
+        else out << ", ";
+        out << "const F"<< p.first << "& f"<<p.first;
+    }
+    out << ");"<<endl;
 }
 
-std::string SumType::ref(const Codegen* gen) const {
-    return gen->ref_sum(_name, _types);
+void Codegen::headBuilder(std::ostream& out, std::string name,
+                 const std::pair<std::string,std::vector<LeafType>>& p){
+    out << name <<"* " << name<<"::build_"<<p.first << "(";
+    for(size_t i = 0 ; i < p.second.size() ; ++i){
+        if(i) out << ",";
+        auto lt = p.second[i];
+        if(lt.pointedType) out << lt.name << "* m" << i;
+        else out <<lt.name << " m" << i;
+    }
+    out << "){"<<endl;
 }
-std::string ProdType::ref(const Codegen* gen) const {
-    return gen->ref_prod(_name, _types);
-}
-std::string BasicType::ref(const Codegen* gen) const {
-    return gen->ref_basic(_ref);
-}
-    
-bool SumType::is_native(const std::map<std::string, Type*>&) const {
-    return false;
-}
-bool ProdType::is_native(const std::map<std::string, Type*>&) const {
-    return false;
-}
-bool BasicType::is_native(const std::map<std::string, Type*>& defined) const {
-    return defined.find(_ref) == defined.end();
+void Codegen::headMatch(std::ostream& out, const FullType& ft){
+    out << "template<typename Ret";
+    for(auto p : ft.content){
+        out << ", typename F"<< p.first;
+    }
+    out << ">" <<endl;
+    out << "Ret " << ft.name <<"::match(";
+    bool first = true;
+    for(auto p : ft.content){
+        if(first) first = false;
+        else out << ", ";
+        out << "const F"<< p.first << "& f"<<p.first;
+    }
+    out << "){"<<endl;
 }
