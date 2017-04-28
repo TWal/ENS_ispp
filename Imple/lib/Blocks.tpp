@@ -7,7 +7,7 @@
 #define DEBUG cerr << __LINE__ << endl
 
 inline int header_offset(uint64_t* block, int off) {
-    return 1 - ((*block >> off) & 0x01);
+    return 1 - ((*block >> off) & 1ll);
 }
 inline void header_unset(uint64_t* block, int off) {
     *block |= 1ll << off;
@@ -43,6 +43,7 @@ char* block<T,NbSubs,FillingMax,FillingMin>::malloc(char* next_toT, size_t size)
     if(!nw) {
         sub = allocate(sub);
         if(!sub) return NULL;
+        new(sub) T;
         char* ini = sub->init();
         assert(ini);
         nw = sub->malloc(ini, size);
@@ -59,6 +60,7 @@ template < typename T
 char* block<T,NbSubs,FillingMax,FillingMin>::init() {
     T* sub = allocate((T*)(data + Size));
     if(!sub) return NULL;
+    new(sub) T;
     char* ini = sub->init();
     assert(ini);
     return ini;
@@ -126,20 +128,19 @@ size_t block<T,NbSubs,FillingMax,FillingMin>::level_0() const {
 
 template < size_t Size >
 charblock<Size>::charblock() {
-    *(char*)this = 0;
+    data[0] = 0;
 }
 template < size_t Size >
 char* charblock<Size>::malloc(char*, size_t size) {
     assert(size < Size); /* If not, it will fail in an awful way */
-    char* used = (char*)this;
-    if(*used + size >= Size) return NULL;
-    *used += size;
-    return (char*)this + Size - *used;
+    if(data[0] + size >= Size) return NULL;
+    data[0] += size;
+    return data + Size - data[0];
 }
     
 template < size_t Size >
 char* charblock<Size>::init() {
-    return (char*)this;
+    return data;
 }
 
 template < size_t Size >
@@ -165,14 +166,14 @@ template < typename T >
 char* block_malloc(char* next_to, size_t size) {
     const size_t SizeSub = sizeof(T);
     char* nw = NULL;
-    T* block;
+    T* block = NULL;
 
     if(next_to) {
         block = (T*)(next_to - ((intptr_t)next_to % SizeSub));
         nw = block->malloc(next_to, size); 
     }
     if(!nw) {
-        /* Our use of aligned_alloc here is non-standart : despite being introduced
+        /* Our use of aligned_alloc here is non-standard : despite being introduced
          * in C11, it is only planned for c++17. Thankfully, gcc support this
          * feature as of 5.4.0.
          */
