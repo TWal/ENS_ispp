@@ -61,6 +61,9 @@ void Codegen::protoMatch(std::ostream& out, const FullType& ft){
     }
     out << ");"<<endl;
 }
+void Codegen::protoFree(std::ostream& out, const FullType& ft){
+    out << "\tvoid free();\n" << endl;
+}
 
 void Codegen::headBuilder(std::ostream& out, std::string name,
                  const std::pair<std::string,std::vector<LeafType>>& p){
@@ -88,3 +91,7 @@ void Codegen::headMatch(std::ostream& out, const FullType& ft){
     }
     out << "){"<<endl;
 }
+void Codegen::headFree(std::ostream& out, const FullType& ft){
+    out << "void " << ft.name << "::free() {" << endl;
+}
+

@@ -59,6 +59,8 @@ void BlockCodegen::define(const FullType& ft){
     }
     // match
     protoMatch(_out,ft);
+    // free
+    protoFree(_out,ft);
     _out << "};" <<endl ;
 }
 
@@ -105,7 +107,12 @@ void BlockCodegen::implement(const FullType& ft){
         _out << "\t\t\tbreak;" << endl;
     }
     _out << "\t}" << endl;
-
     _out << "}" <<endl;
+
+    // Free
+    headFree(_out,ft);
+    _out << "\tblock_free<block" << _blocks.size() - 1 << ">((char*)this, sizeof(this));" << endl;
+    _out << "}" << endl;
+
 }
 

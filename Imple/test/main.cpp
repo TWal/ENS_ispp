@@ -18,7 +18,7 @@ void recur_free(tree* ptr) {
     ptr->match<void>(
             [] (int i) { },
             [] (tree* left, tree* right) { recur_free(left); recur_free(right); });
-    block_free<block1>((char*)ptr, sizeof(tree));
+    ptr->free();
 }
 
 int main() {
