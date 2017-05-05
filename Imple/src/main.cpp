@@ -2,7 +2,7 @@
 #include "Scanner.h"
 #include "../out/parse.hpp"
 #include "Type.h"
-//#include "BlockCodegen.h"
+#include "BlockCodegen.h"
 #include "BasicCodegen.h"
 #include "logScanner.h"
 #include "LogElem.h"
@@ -18,7 +18,14 @@ int main(){
     parser.parse(); //parse
     fillLink(types);
 
-    BasicCodegen bcg(cout,cout);
+    Block blk = {
+        .size = 64,
+        .fmax = 64,
+        .fmin = 0
+    };
+    vector<Block> blks = { blk, blk };
+
+    BlockCodegen bcg(cout,cout,blks);
     bcg.declare(types[0]);
     bcg.define(types[0]);
     bcg.implement(types[0]);

@@ -4,7 +4,8 @@
 #include <functional>
 using namespace std;
 
-#include "tree.h"
+#include "Blocks.h"
+#include "tree.tpp"
 
 ostream& operator<<(ostream& out,tree& tr) {
     tr.match<void>(
@@ -16,7 +17,6 @@ ostream& operator<<(ostream& out,tree& tr) {
 int main() {
     int input;
     vector<tree*> pile;
-    //init_blocks();
 
     while(cin >> input) {
         if(input != -42) {
