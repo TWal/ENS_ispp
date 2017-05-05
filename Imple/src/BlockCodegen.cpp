@@ -38,7 +38,7 @@ void BlockCodegen::define(const FullType& ft){
             if(lt.pointedType) _out << "\t\t" << lt.name << "* m" << i << ";" <<endl;
             else _out << "\t\t" << lt.name << " m" << i << ";" << endl;
         }
-        _out <<endl<< "\t};" << endl;
+        _out <<endl<< "\t} __attribute__ ((__packed__));" << endl;
 
     }
 
@@ -61,7 +61,7 @@ void BlockCodegen::define(const FullType& ft){
     protoMatch(_out,ft);
     // free
     protoFree(_out,ft);
-    _out << "};" <<endl ;
+    _out << "} __attribute__ ((__packed__));" <<endl ;
 }
 
 void BlockCodegen::implement(const FullType& ft){
