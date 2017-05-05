@@ -43,7 +43,7 @@ struct block {
     /* Free a sub block.
      * Returns true if FillingMin is reached
      */
-    bool free(T* sub);
+    bool free(char* ptr, size_t size);
     /* Count the number of subblocks free.
      */
     inline size_t filling() const {
@@ -63,6 +63,7 @@ struct charblock {
     char data[Size];
     charblock();
     char* malloc(char*, size_t size);
+    bool free(char* ptr, size_t size);
     char* init();
     size_t level_0() const;
 };
@@ -70,6 +71,10 @@ struct charblock {
 /* The global malloc */
 template < typename T >
 char* block_malloc(char* next_to, size_t size);
+
+/* The global free */
+template < typename T >
+void block_free(char* ptr, size_t size);
 
 #include "Blocks.tpp"
 

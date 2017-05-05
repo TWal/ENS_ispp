@@ -14,12 +14,22 @@ ostream& operator<<(ostream& out,tree& tr) {
     return out;
 }
 
+void recur_free(tree* ptr) {
+    ptr->match<void>(
+            [] (int i) { },
+            [] (tree* left, tree* right) { recur_free(left); recur_free(right); });
+    block_free<block1>((char*)ptr, sizeof(tree));
+}
+
 int main() {
     int input;
     vector<tree*> pile;
 
     while(cin >> input) {
-        if(input != -42) {
+        if(input == -1 && pile.size() >= 1) {
+            recur_free(pile.back());
+            pile.pop_back();
+        } else if(input != -42) {
             pile.push_back(tree::build_leaf(input));
         } else if(pile.size() >= 2) {
             tree* t1 = pile.back(); pile.pop_back();

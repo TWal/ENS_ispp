@@ -102,12 +102,14 @@ template < typename T
          , size_t FillingMax
          , size_t FillingMin
          >
-bool block<T,NbSubs,FillingMax,FillingMin>::free(T* sub) {
-    size_t hd = SizeSub;
-    size_t offset = std::distance(data + hd, (char*)sub) / SizeSub;
-    assert(header_offset((uint64_t*)data,offset) == 1);
-    header_unset((uint64_t*)data,offset);
-    return filling() <= FillingMin;
+bool block<T,NbSubs,FillingMax,FillingMin>::free(char* ptr, size_t size) {
+    T* sub = (T*)(ptr - ((intptr_t)ptr % SizeSub));
+    if(sub->free(ptr, size)) {
+        size_t offset = ((intptr_t)sub - (intptr_t)data - SizeSub) / SizeSub;
+        header_unset((uint64_t*)data, offset);
+        return filling() == 0;
+    }
+    return false;
 }
 
 template < typename T
@@ -129,12 +131,14 @@ size_t block<T,NbSubs,FillingMax,FillingMin>::level_0() const {
 template < size_t Size >
 charblock<Size>::charblock() {
     data[0] = 0;
+    data[1] = 0;
 }
 template < size_t Size >
 char* charblock<Size>::malloc(char*, size_t size) {
-    assert(size < Size); /* If not, it will fail in an awful way */
-    if(data[0] + size >= Size) return NULL;
+    assert(size < Size - 1); /* If not, it will fail in an awful way */
+    if(data[0] + size + 1 >= Size) return NULL;
     data[0] += size;
+    data[1] += size;
     return data + Size - data[0];
 }
 
@@ -146,6 +150,12 @@ char* charblock<Size>::init() {
 template < size_t Size >
 size_t charblock<Size>::level_0() const {
     return data[0];
+}
+
+template < size_t Size >
+bool charblock<Size>::free(char* ptr, size_t size) {
+    data[1] -= size;
+    return data[1] == 0;
 }
 
 template < typename T >
@@ -161,7 +171,7 @@ char* block_init() {
     assert(nw);
     return nw;
 }
-
+    
 static char* _nextto = NULL;
 template < typename T >
 char* block_malloc(char* next_to, size_t size) {
@@ -195,5 +205,12 @@ char* block_malloc(char* next_to, size_t size) {
     }
     _nextto = nw;
     return nw;
+}
+
+template < typename T >
+void block_free(char* ptr, size_t size) {
+    const size_t SizeSub = sizeof(T);
+    T* block = (T*)(ptr - ((intptr_t)ptr % SizeSub));
+    if(block->free(ptr, size)) delete block;
 }
 
