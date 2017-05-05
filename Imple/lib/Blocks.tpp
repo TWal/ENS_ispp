@@ -83,8 +83,11 @@ T* block<T,NbSubs,FillingMax,FillingMin>::allocate(T* next_toT) {
 
     uint64_t noff = offset;
     uint64_t bitmap = (*(uint64_t*)data) & ((1ll << noff) - 1ll);
-    if(bitmap == 0) return NULL;
-    /* TODO fill from the end if necessary */
+    if(bitmap == 0) {
+        /* Allocate from the end if necessary */
+        bitmap = *(uint64_t*)data;
+        if(bitmap == 0) return NULL;
+    }
     asm("bsr %1,%0;" : "=r" (noff) : "r" (bitmap));
 
     header_set((uint64_t*)data, noff);
