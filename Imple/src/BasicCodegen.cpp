@@ -48,6 +48,8 @@ void BasicCodegen::define(const FullType& ft){
     }
     // match
     protoMatch(_out,ft);
+    // free
+    protoFree(_out,ft);
     _out << "};" <<endl ;
 }
 
@@ -83,5 +85,10 @@ void BasicCodegen::implement(const FullType& ft){
     _out << "\t}" << endl;
 
     _out << "}" <<endl;
+
+    // free
+    headFree(_out, ft);
+    _out << "\tdelete this;" << endl;
+    _out << "}" << endl;
 }
 
