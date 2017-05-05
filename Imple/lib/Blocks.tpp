@@ -162,6 +162,7 @@ char* block_init() {
     return nw;
 }
 
+static char* _nextto = NULL;
 template < typename T >
 char* block_malloc(char* next_to, size_t size) {
     const size_t SizeSub = sizeof(T);
@@ -173,19 +174,26 @@ char* block_malloc(char* next_to, size_t size) {
         nw = block->malloc(next_to, size); 
     }
     if(!nw) {
-        /* Our use of aligned_alloc here is non-standard : despite being introduced
-         * in C11, it is only planned for c++17. Thankfully, gcc support this
-         * feature as of 5.4.0.
-         */
-        block = (T*)aligned_alloc(SizeSub, SizeSub);
-        assert(block);
-        assert((intptr_t)block % SizeSub == 0);
-        new(block) T;
-        char* ini = block->init();
-        assert(ini);
-        nw = block->malloc(ini, size);
-        assert(nw);
+        if(_nextto) {
+            block = (T*)(_nextto - ((intptr_t)_nextto % SizeSub));
+            nw = block->malloc(_nextto, size);
+        }
+        if(!nw) {
+            /* Our use of aligned_alloc here is non-standard : despite being introduced
+             * in C11, it is only planned for c++17. Thankfully, gcc support this
+             * feature as of 5.4.0.
+             */
+            block = (T*)aligned_alloc(SizeSub, SizeSub);
+            assert(block);
+            assert((intptr_t)block % SizeSub == 0);
+            new(block) T;
+            char* ini = block->init();
+            assert(ini);
+            nw = block->malloc(ini, size);
+            assert(nw);
+        }
     }
+    _nextto = nw;
     return nw;
 }
 
