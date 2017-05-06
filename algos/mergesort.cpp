@@ -5,130 +5,139 @@ inline void assert(bool) {}
 #include <array>
 #include <iostream>
 using namespace std;
+#include "generated/Blocks.h"
 #include "generated/LinkedList.cpp"
 
 
-void printList(list_t* l) {
-    list_t::match<void>(l,
-        [&](cons_t* cons) {
-            printf("%d ", cons_t::get0(cons));
-            printList(cons_t::get1(cons));
+void printList(list* l) {
+    l->match<void>(
+        [&](int head, list* tail) {
+            printf("%d ", head);
+            printList(tail);
         },
-        [&](nil_t*) {
+        [&](char ) {
             printf("\n");
         }
     );
 }
 
-list_t* cons(int i, list_t* l) {
-    return list_t::build_cons(cons_t::build(i, l));
+list* cons(int i, list* l) {
+    return list::build_cons(i, l);
 }
 
-list_t* nil() {
-    static list_t* theNil = list_t::build_nil(nil_t::build(42));
-    return theNil;
+list* nil() {
+    //static list* theNil = list::build_nil(42);
+    //return theNil;
+    return list::build_nil(42);
 }
 
-list_t* randomList(int n) {
+list* randomList(int n) {
     if(n == 0) {
         return nil();
     }
-    return cons(rand()%1000, randomList(n-1));
+    return cons(rand()%(5*1000*1000), randomList(n-1));
 }
 
-list_t* merge(list_t* l1, list_t* l2) {
-    return list_t::match<list_t*>(l1,
-        [&](cons_t* c) {
-            int x1 = cons_t::get0(c);
-            list_t* x1s = cons_t::get1(c);
-            return list_t::match<list_t*>(l2,
-                [&](cons_t* c) {
-                    int x2 = cons_t::get0(c);
-                    list_t* x2s = cons_t::get1(c);
+list* merge(list* l1, list* l2) {
+    return l1->match<list*>(
+        [&](int x1, list* x1s) {
+            return l2->match<list*>(
+                [&](int x2, list* x2s) {
                     if(x1 < x2) {
+                        l1->free();
                         return cons(x1, merge(x1s, l2));
                     } else {
+                        l2->free();
                         return cons(x2, merge(l1, x2s));
                     }
                 },
-                [&](nil_t*) {
+                [&](char) {
+                    l2->free();
                     return l1;
                 }
             );
         },
-        [&](nil_t*) {
+        [&](char) {
+            l1->free();
             return l2;
         }
     );
 }
 
-pair<list_t*, list_t*> split(list_t* l) {
-    return list_t::match<pair<list_t*, list_t*>>(l,
-        [&](cons_t* c) {
-            int x1 = cons_t::get0(c);
-            list_t* lp = cons_t::get1(c);
-            return list_t::match<pair<list_t*, list_t*>>(lp,
-                [&](cons_t* c) {
-                    int x2 = cons_t::get0(c);
-                    list_t* lpp = cons_t::get1(c);
-                    pair<list_t*, list_t*> rec = split(lpp);
+pair<list*, list*> split(list* l) {
+    return l->match<pair<list*, list*>>(
+        [&](int x1, list* lp) {
+            return lp->match<pair<list*, list*>>(
+                [&](int x2, list* lpp) {
+                    pair<list*, list*> rec = split(lpp);
+                    l->free();
+                    lp->free();
                     return make_pair(cons(x1, rec.first), cons(x2, rec.second));
                 },
-                [&](nil_t*) {
+                [&](char) {
+                    l->free();
+                    lp->free();
                     return make_pair(cons(x1, nil()), nil());
                 }
             );
         },
-        [&](nil_t*) {
+        [&](char) {
+            l->free();
             return make_pair(nil(), nil());
         }
     );
 }
 
-size_t length(list_t* l) {
-    return list_t::match<size_t>(l,
-        [&](cons_t* cons) {
-            list_t* xs = cons_t::get1(cons);
-            return 1 + length(xs);
+size_t length(list* l) {
+    return l->match<size_t>(
+        [&](int, list* tail) {
+            return 1 + length(tail);
         },
-        [&](nil_t*) {
+        [&](char) {
             return 0;
         }
     );
 }
 
-list_t* mergeSort(list_t* l) {
+list* mergeSort(list* l) {
     if(length(l) <= 1) {
         return l;
     }
-    pair<list_t*, list_t*> splitted = split(l);
+    pair<list*, list*> splitted = split(l);
     return merge(mergeSort(splitted.first), mergeSort(splitted.second));
 }
 
-#if 0
-
-    list_t::match<void>(l,
-        [&](cons_t* c) {
-            cons_t::match<void>(c, [&](int x, list_t* xs) {
-                printf("%d ", x);
-                printList(xs);
-            });
+bool isSortedAux(list* l, int lowerBound) {
+    return l->match<bool>(
+        [&](int head, list* tail) {
+            return lowerBound <= head && isSortedAux(tail, head);
         },
-        [&](nil_t*) {
-            printf("\n");
+        [&](char) {
+            return true;
         }
     );
+}
 
-
-#endif
+bool isSorted(list* l) {
+    return l->match<bool>(
+        [&](int head, list*) {
+            return isSortedAux(l, head);
+        },
+        [&](char) {
+            return true;
+        }
+    );
+}
 
 int main() {
-    init_blocks();
     srand(42);
-    list_t* l = randomList(100*1000);
-    //list_t* l = randomList(1000*1000);
+    const int SIZE = 1000*1000;
+    list* l = randomList(SIZE);
     //printList(l);
-    mergeSort(l);
-    //printList(mergeSort(l));
+    printf("%lu\n", length(l));
+    list* sortedl = mergeSort(l);
+    printf("%lu\n", length(sortedl));
+    printf("%d\n", isSorted(sortedl));
+    //printList(sortedl);
     return 0;
 }
