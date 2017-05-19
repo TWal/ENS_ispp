@@ -7,10 +7,10 @@
 
 struct CompEntry{
     std::string name;
-    uint32_t head_size; // th_i
-    uint32_t val; // v_i
-    int nb6Pt; // s_i
-    int size(){return ((head_size + 6 * nb6Pt + 7)/8)*8;} // tt_i
+    uint32_t head_size; // l_i
+    uint32_t val; // c(i)
+    int nb6Pt; // n_i
+    int size(){return ((1 + head_size + 6 * nb6Pt + 7)/8)*8;} // 8*h_i
 };
 
 struct Entry {
