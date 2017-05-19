@@ -7,8 +7,7 @@ DEPDIR=dep
 CXX=g++
 CXXFLAGS= -I $(SRCDIR) -I $(OUTDIR) --std=c++14
 CXXWFLAGS= -Wall -Wextra $(CXXFLAGS)
-#SRC=$(wildcard $(SRCDIR)/*.cpp)
-SRC= src/main.cpp src/Type.cpp src/BasicCodegen.cpp src/BlockCodegen.cpp
+SRC=$(wildcard $(SRCDIR)/*.cpp)
 OBJ=$(patsubst $(SRCDIR)/%.cpp,$(OUTDIR)/%.o,$(SRC))  $(OUTDIR)/parse.o $(OUTDIR)/lex.o \
 			$(OUTDIR)/log/log.y.o $(OUTDIR)/log/log.l.o
 DEPF = $(wildcard $(DEPDIR)/*.d)

@@ -36,11 +36,11 @@ void fillLink(std::vector<FullType>& fts){
 
 void Codegen::protoBuilder(std::ostream& out,std::string name,
                   const std::pair<std::string,std::vector<LeafType>>& p){
-    out <<"\tstatic "<< name <<"* build_"<<p.first << "(";
+    out <<"\tstatic "<< name <<" build_"<<p.first << "(";
     for(size_t i = 0 ; i < p.second.size() ; ++i){
         if(i) out << ",";
         auto lt = p.second[i];
-        if(lt.pointedType) out << lt.name << "* m" << i;
+        if(lt.pointedType) out << lt.name << " m" << i;
         else out <<lt.name << " m" << i;
     }
     out << ");"<<endl;
@@ -67,11 +67,11 @@ void Codegen::protoFree(std::ostream& out, const FullType& ft){
 
 void Codegen::headBuilder(std::ostream& out, std::string name,
                  const std::pair<std::string,std::vector<LeafType>>& p){
-    out << name <<"* " << name<<"::build_"<<p.first << "(";
+    out << name <<" " << name<<"::build_"<<p.first << "(";
     for(size_t i = 0 ; i < p.second.size() ; ++i){
         if(i) out << ",";
         auto lt = p.second[i];
-        if(lt.pointedType) out << lt.name << "* m" << i;
+        if(lt.pointedType) out << lt.name << " m" << i;
         else out <<lt.name << " m" << i;
     }
     out << "){"<<endl;
