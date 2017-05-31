@@ -13,6 +13,11 @@ void* Page::clAlloc(){
     return &data[bsf(bitset)-1];
 }
 
+inline void* pageAlloc(){
+    return mmap(NULL, 0x1000, PROT_READ | PROT_WRITE,
+            MAP_ANONYMOUS, -1, 0);
+}
+
 void* clTmpAlloc(){
     Page* dest = nullptr;
     for(auto p : tmppages){
@@ -22,7 +27,7 @@ void* clTmpAlloc(){
         }
     }
     if(!dest){
-        void* vdest = aligned_alloc(0x1000,0x1000);
+        void* vdest = pageAlloc();
         dest = new(vdest) Page(true);
         tmppages.push_back(dest);
     }
@@ -41,7 +46,7 @@ void setCurrent(){
     }
     if(!tmp){
         // todo Think about mmap anonymous.
-        void* vdest = aligned_alloc(0x1000,0x1000);
+        void* vdest = pageAlloc();
         current = new(vdest) Page(false);
     }
     else current = tmp;
