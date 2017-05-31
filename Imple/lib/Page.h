@@ -26,16 +26,21 @@ inline size_t cnt(u64 val){
 
 
 class Page{
+    public:
         int magic; //0x7743de16
         int id;
         static int nextId;
         u64 bitset;
         char sizes[48]; // bit i is one in bitset iff sizes[i] == 0
         cacheLine data[63];
-    public:
+        char addToSize(int id, char s);
+        char getSize(int id);
+        void setSize(int id, char s);
+
         Page(bool tmp){
             assert((u64(this) & 0xFFF) == 0);
-            memset(this,0,64);
+            // Useless : mmap gives a zero'd out page
+            // memset(this,0,64);
             id = tmp ? -nextId++ : nextId++;
             bitset = 0x7FFFFFFFFFFFFFFFull;
 #ifndef NDEBUG // for checking that a page is indeed a Page.
@@ -44,6 +49,7 @@ class Page{
         }
         // number of empty cachelines under which Page is going to refilling
         static const int minAlpha = 40;
+        static const int maxToFill = 30;
         void* clAlloc();
         bool full() const {return !bitset;}
         size_t nbFree() const {return cnt(bitset);}

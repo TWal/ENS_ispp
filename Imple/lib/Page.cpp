@@ -1,5 +1,6 @@
 #include"Page.h"
 #include <cstdlib>
+#include <sys/mman.h>
 
 int Page::nextId = 0;
 std::vector<Page*> tmppages; // size should not be more than 2 or 3.
@@ -45,7 +46,6 @@ void setCurrent(){
         }
     }
     if(!tmp){
-        // todo Think about mmap anonymous.
         void* vdest = pageAlloc();
         current = new(vdest) Page(false);
     }
@@ -63,6 +63,59 @@ void* clAlloc(){
     return cl;
 }
 
-//int main(){}
+struct _int24 {
+    char bytes[3];
+} __attribute ((__packed__));
+
+char Page::getSize(int id) {
+    struct _int24* msizes = (struct _int24*)sizes;
+    uint32_t value = (uint32_t)msizes[id / 3].bytes[0]
+        + (uint32_t)msizes[id / 3].bytes[1] << 8
+        + (uint32_t)msizes[id / 3].bytes[2] << 16;
+    return (char)(value >> ((id % 3) * 6)) & 0x3F;
+}
+
+void Page::setSize(int id, char s) {
+    struct _int24* msizes = (struct _int24*)sizes;
+    uint32_t value = (s & 0x3F) << ((id % 3) * 6);
+    for(int i = 0; i < 3; ++i) {
+        msizes[id / 3].bytes[i] |= value % 256;
+        value >> 8;
+    }
+}
+
+char Page::addToSize(int id, char s) {
+    char ns = getSize(id);
+    ns += s;
+    setSize(id, ns);
+    return ns;
+}
+
+void clfree(void* cl) {
+    Page* pg = (Page*)((char*)cl - ((intptr_t)cl % 0x1000));
+    int mid = ((intptr_t)cl % 0x1000) / 64;
+    pg->setSize(mid, 0);
+    pg->bitset |= 1 << mid;
+    if(pg->id < 0) return;
+
+    if(pg->nbFree() == 0 && compPages.size() >= Page::maxToFill) {
+        pg->~Page();
+        munmap(pg, 0x1000);
+    } else if(pg->nbFree() == Page::minAlpha) {
+        compPages.push_back(pg);
+    }
+}
+
+void clfree(void* cl,int size) {
+    Page* pg = (Page*)((char*)cl - ((intptr_t)cl % 0x1000));
+    int id = ((intptr_t)cl % 0x1000) / 64;
+    int sz = pg->getSize(id);
+    assert(sz >= size);
+    sz -= size;
+    pg->setSize(id, sz);
+    if(sz == 0) clfree(cl);
+}
+
+// int main(){}
 
 // TODO free
