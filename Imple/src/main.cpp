@@ -31,7 +31,8 @@ int main(int argc, char** argv){
     
 
     //BlockCodegen bcg(cout,cout,blks);
-    BasicCodegen bcg(cout,cout);
+    CompCodegen bcg(cout,cout);
+    bcg.header();
     bcg.declare(types[0]);
     bcg.define(types[0]);
     bcg.implement(types[0]);

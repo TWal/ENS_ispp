@@ -53,6 +53,7 @@ class Page{
         void* clAlloc();
         bool full() const {return !bitset;}
         size_t nbFree() const {return cnt(bitset);}
+        int ID() const {return id;}
 };
 
 static_assert(sizeof(Page) == 0x1000);
@@ -66,8 +67,8 @@ extern Page* current; // should not be in compPages.
 void* clTmpAlloc();
 void setCurrent();
 void* clAlloc();
-void  clfree(void* cl);
-void  clfree(void* cl,int size);
+void  clFree(void* cl);
+void  clFree(void* cl,int size);
 
 
 

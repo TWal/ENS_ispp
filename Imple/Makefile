@@ -53,6 +53,13 @@ clean:
 	rm -rf $(OUTDIR)
 	rm -rf $(DEPDIR)
 
+testnc: all
+	./adtOpti test/tree.typ > test/tree.h
+
+testc: all
+	./adtOpti test/tree.typ > test/tree.h
+	g++ -I lib test/main.cpp -o test/tree.out
+
 test: all
 	./adtOpti < test/tree.typ > test/tree.cpp
 	g++ -I lib test/main.cpp -o test/tree.out
