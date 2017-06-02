@@ -14,9 +14,12 @@ void* Page::clAlloc(){
     return &data[bsf(bitset)-1];
 }
 
+static void* page_alloc_addr = NULL;
 inline void* pageAlloc(){
-    return mmap(NULL, 0x1000, PROT_READ | PROT_WRITE,
+    void* ret = mmap(page_alloc_addr, 0x1000, PROT_READ | PROT_WRITE,
             MAP_ANONYMOUS, -1, 0);
+    page_alloc_addr = (char*)ret + 0x1000;
+    return ret;
 }
 
 void* clTmpAlloc(){
