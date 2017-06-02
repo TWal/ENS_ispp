@@ -11,14 +11,17 @@ Page* current; // should not be in compPages.
 void* Page::clAlloc(){
     assert(bitset);
     //if(!bitset) return nullptr;
-    return &data[bsf(bitset)-1];
+    int id = bsf(bitset);
+    bitset &= ~(1 << id);
+    return &data[id - 1];
 }
 
 static void* page_alloc_addr = NULL;
 inline void* pageAlloc(){
     void* ret = mmap(page_alloc_addr, 0x1000, PROT_READ | PROT_WRITE,
-            MAP_ANONYMOUS, -1, 0);
-    page_alloc_addr = (char*)ret + 0x1000;
+            MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    assert(ret != MAP_FAILED);
+    page_alloc_addr = (char*)ret - 0x1000;
     return ret;
 }
 
@@ -95,9 +98,9 @@ char Page::addToSize(int id, char s) {
 }
 
 void clfree(void* cl) {
-    Page* pg = (Page*)((char*)cl - ((intptr_t)cl % 0x1000));
+    Page* pg = (Page*)((uintptr_t)cl & ~0xFFF);
     int mid = ((intptr_t)cl % 0x1000) / 64;
-    pg->setSize(mid, 0);
+    pg->setSize(mid, 64);
     pg->bitset |= 1 << mid;
     if(pg->id < 0) return;
 
@@ -114,11 +117,31 @@ void clfree(void* cl,int size) {
     int id = ((intptr_t)cl % 0x1000) / 64;
     int sz = pg->getSize(id);
     assert(sz >= size);
-    sz -= size;
+    sz += size;
     pg->setSize(id, sz);
     if(sz == 0) clfree(cl);
 }
 
-// int main(){}
+// using namespace std;
+// int main() {
+//     setCurrent();
+//     std::vector<void*> cls;
+//     uint64_t i;
+// 
+//     while(true) {
+//         cout << "> ";
+//         cin >> i;
+//         if(i) {
+//             void* ncl = clAlloc();
+//             cout << "Cache line : " << ncl << endl;
+//             *(uint64_t*)ncl = i;
+//             cls.push_back(ncl);
+//         } else {
+//             cout << *(uint64_t*)cls.back() << endl;
+//             clfree(cls.back());
+//             cls.pop_back();
+//         }
+//     }
+// }
 
 // TODO free

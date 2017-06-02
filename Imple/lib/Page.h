@@ -42,7 +42,7 @@ class Page{
             // Useless : mmap gives a zero'd out page
             // memset(this,0,64);
             id = tmp ? -nextId++ : nextId++;
-            bitset = 0x7FFFFFFFFFFFFFFFull;
+            bitset = 0xFFFFFFFFFFFFFFFEull;
 #ifndef NDEBUG // for checking that a page is indeed a Page.
             magic = 0x7743de16;
 #endif
@@ -56,7 +56,7 @@ class Page{
         int ID() const {return id;}
 };
 
-static_assert(sizeof(Page) == 0x1000);
+static_assert(sizeof(Page) == 0x1000, "Ahhhhhh");
 
 
 extern std::vector<Page*> tmppages; // size should not be more than 2 or 3.
